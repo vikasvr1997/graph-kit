@@ -44,6 +44,8 @@ Cloud deployment and latency must be validated against real databases separately
   `pipelines/customers_to_spanner/README.md` for deployment and operating limits.
 - BigQuery ML schema-embedding generation and native exact vector retrieval,
   exposed through an optional approved-context retriever on DatasetAgent.
+- Full-catalog agent mode without embedding artifacts or calls, plus native
+  Spanner cosine retrieval with typed vector parameters and version/model filters.
 
 ## Live validation
 - Isolated copies of Customers_data loaded into BigQuery and a free-trial Spanner instance.
@@ -56,9 +58,13 @@ Cloud deployment and latency must be validated against real databases separately
   in Customers_data. Of 42 agent requests over seven cases, 40 completed and
   matched independent SQL; two failed with model-capacity 429 errors. See the
   BQML report for native/local retrieval and full-agent timing comparisons.
+- Matched four-way no-embedding/native-vector comparison across BigQuery and
+  Spanner: 84 requests over seven cases, 81 completed/reference-matched answers
+  and three model-capacity errors. Markdown and aggregate JSON baselines are
+  preserved under `reports/retrieval-comparison-2026-10-19.*`.
 
 ## Remaining production work
 - Expand live BigQuery/Spanner validation beyond the freight benchmark; add workload quality and ambiguity evaluations.
-- Additional database adapters, Spanner vector retrieval and ANN/index deployment.
+- Additional database adapters and ANN/index deployment.
 - Semantic review in the browser (JSON review is implemented).
 - Concurrent serving/load tests, deployment-specific IAM and latency tuning.

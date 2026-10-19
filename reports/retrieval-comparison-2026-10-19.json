@@ -1,0 +1,341 @@
+{
+  "format_version": 1,
+  "metadata": {
+    "project": "premium-odyssey-508202-k9",
+    "dataset": "graphkit_validation",
+    "spanner_instance": "graphkit-benchmark",
+    "database": "graphkit_validation",
+    "spanner_capacity": "free trial, shared 100 PU; not a production capacity test",
+    "model": "gemini-3.5-flash",
+    "embedding_model": "gemini-embedding-001",
+    "repeat": 3,
+    "started_utc": "2026-10-19T18:26:41.089472+00:00",
+    "resources": {
+      "bq_vector_table": "premium-odyssey-508202-k9.Customers_data.GraphkitSemantic_comparison_b4d1ad4fed30",
+      "spanner_vector_table": "GraphkitSemantic_comparison_b4d1ad4fed30",
+      "model": "premium-odyssey-508202-k9.Customers_data.graphkit_catalog_embedding",
+      "embedding_model": "gemini-embedding-001",
+      "dimensions": 768,
+      "objects": 96,
+      "catalog_hashes": {
+        "bigquery": "b4d1ad4fed30bfa66636ed6329761a0b178a6c89e7cca3491d388a4c342f47d0",
+        "spanner": "ede07c05f1e3e710b3454a497f2b7e1e7a2aa5286a694e18a4f34b3d7e6c136e"
+      }
+    },
+    "cases": [
+      "customer_lane_margin",
+      "facility_operator_delays",
+      "customer_service",
+      "driver_fuel_detention",
+      "lane_efficiency",
+      "alias_freight",
+      "alias_diesel"
+    ],
+    "paths": [
+      "bigquery_no_embeddings",
+      "bigquery_native_embeddings",
+      "spanner_no_embeddings",
+      "spanner_native_embeddings"
+    ],
+    "returned_model_versions": [
+      "gemini-3.5-flash"
+    ],
+    "finished_utc": "2026-10-19T18:43:51.205701+00:00"
+  },
+  "row_counts": {
+    "customers": 200,
+    "drivers": 150,
+    "events": 170820,
+    "facilities": 50,
+    "fuel_purchases": 196442,
+    "loads": 85410,
+    "routes": 58,
+    "trips": 85410
+  },
+  "summary": {
+    "bigquery_no_embeddings": {
+      "requests": 21,
+      "successful": 20,
+      "correct": 20,
+      "errors": 1,
+      "abstained": 0,
+      "latency": {
+        "n": 20,
+        "p50_ms": 10179.29,
+        "p95_ms": 30221.15,
+        "min_ms": 4703.16,
+        "max_ms": 38012.26
+      },
+      "correct_latency": {
+        "n": 20,
+        "p50_ms": 10179.29,
+        "p95_ms": 30221.15,
+        "min_ms": 4703.16,
+        "max_ms": 38012.26
+      },
+      "stages": {
+        "retrieval": {
+          "n": 20,
+          "p50_ms": 1.02,
+          "p95_ms": 1.61,
+          "min_ms": 0.3,
+          "max_ms": 1.88
+        },
+        "generation": {
+          "n": 20,
+          "p50_ms": 6759.52,
+          "p95_ms": 22058.19,
+          "min_ms": 2540.28,
+          "max_ms": 34622.94
+        },
+        "execution": {
+          "n": 20,
+          "p50_ms": 928.13,
+          "p95_ms": 1259.33,
+          "min_ms": 628.74,
+          "max_ms": 1269.79
+        },
+        "explanation": {
+          "n": 20,
+          "p50_ms": 2227.95,
+          "p95_ms": 3163.28,
+          "min_ms": 1153.42,
+          "max_ms": 7160.73
+        }
+      }
+    },
+    "bigquery_native_embeddings": {
+      "requests": 21,
+      "successful": 20,
+      "correct": 20,
+      "errors": 1,
+      "abstained": 0,
+      "latency": {
+        "n": 20,
+        "p50_ms": 9430.21,
+        "p95_ms": 24685.84,
+        "min_ms": 6267.98,
+        "max_ms": 34182.19
+      },
+      "correct_latency": {
+        "n": 20,
+        "p50_ms": 9430.21,
+        "p95_ms": 24685.84,
+        "min_ms": 6267.98,
+        "max_ms": 34182.19
+      },
+      "stages": {
+        "retrieval": {
+          "n": 20,
+          "p50_ms": 1407.79,
+          "p95_ms": 1900.33,
+          "min_ms": 1193.95,
+          "max_ms": 2500.53
+        },
+        "generation": {
+          "n": 20,
+          "p50_ms": 4334.24,
+          "p95_ms": 13162.35,
+          "min_ms": 2545.96,
+          "max_ms": 18735.42
+        },
+        "execution": {
+          "n": 20,
+          "p50_ms": 876.33,
+          "p95_ms": 981.82,
+          "min_ms": 560.3,
+          "max_ms": 1155.57
+        },
+        "explanation": {
+          "n": 20,
+          "p50_ms": 2314.14,
+          "p95_ms": 12663.48,
+          "min_ms": 1369.53,
+          "max_ms": 28627.44
+        }
+      }
+    },
+    "spanner_no_embeddings": {
+      "requests": 21,
+      "successful": 20,
+      "correct": 20,
+      "errors": 1,
+      "abstained": 0,
+      "latency": {
+        "n": 20,
+        "p50_ms": 12331.14,
+        "p95_ms": 23310.99,
+        "min_ms": 4860.96,
+        "max_ms": 34853.82
+      },
+      "correct_latency": {
+        "n": 20,
+        "p50_ms": 12331.14,
+        "p95_ms": 23310.99,
+        "min_ms": 4860.96,
+        "max_ms": 34853.82
+      },
+      "stages": {
+        "retrieval": {
+          "n": 20,
+          "p50_ms": 0.97,
+          "p95_ms": 1.34,
+          "min_ms": 0.36,
+          "max_ms": 1.68
+        },
+        "generation": {
+          "n": 20,
+          "p50_ms": 7103.38,
+          "p95_ms": 12076.78,
+          "min_ms": 3003.94,
+          "max_ms": 18855.84
+        },
+        "execution": {
+          "n": 20,
+          "p50_ms": 1016.27,
+          "p95_ms": 4014.61,
+          "min_ms": 74.94,
+          "max_ms": 4115.96
+        },
+        "explanation": {
+          "n": 20,
+          "p50_ms": 2248.62,
+          "p95_ms": 5398.81,
+          "min_ms": 1655.91,
+          "max_ms": 19203.3
+        }
+      }
+    },
+    "spanner_native_embeddings": {
+      "requests": 21,
+      "successful": 21,
+      "correct": 21,
+      "errors": 0,
+      "abstained": 0,
+      "latency": {
+        "n": 21,
+        "p50_ms": 12366.15,
+        "p95_ms": 28829.75,
+        "min_ms": 4707.12,
+        "max_ms": 31655.38
+      },
+      "correct_latency": {
+        "n": 21,
+        "p50_ms": 12366.15,
+        "p95_ms": 28829.75,
+        "min_ms": 4707.12,
+        "max_ms": 31655.38
+      },
+      "stages": {
+        "retrieval": {
+          "n": 21,
+          "p50_ms": 504.78,
+          "p95_ms": 1382.45,
+          "min_ms": 320.08,
+          "max_ms": 1680.8
+        },
+        "generation": {
+          "n": 21,
+          "p50_ms": 6703.6,
+          "p95_ms": 22539.16,
+          "min_ms": 2348.02,
+          "max_ms": 26879.5
+        },
+        "execution": {
+          "n": 21,
+          "p50_ms": 639.17,
+          "p95_ms": 4947.53,
+          "min_ms": 72.64,
+          "max_ms": 5695.1
+        },
+        "explanation": {
+          "n": 21,
+          "p50_ms": 2176.58,
+          "p95_ms": 8452.58,
+          "min_ms": 1572.86,
+          "max_ms": 11599.34
+        }
+      }
+    }
+  },
+  "subsets": {
+    "complex": {
+      "bigquery_no_embeddings": {
+        "requests": 15,
+        "correct": 15,
+        "successful": 15,
+        "p50_ms": 11617.0,
+        "p95_ms": 38012.26
+      },
+      "bigquery_native_embeddings": {
+        "requests": 15,
+        "correct": 14,
+        "successful": 14,
+        "p50_ms": 10053.93,
+        "p95_ms": 34182.19
+      },
+      "spanner_no_embeddings": {
+        "requests": 15,
+        "correct": 14,
+        "successful": 14,
+        "p50_ms": 14039.485,
+        "p95_ms": 34853.82
+      },
+      "spanner_native_embeddings": {
+        "requests": 15,
+        "correct": 15,
+        "successful": 15,
+        "p50_ms": 17186.09,
+        "p95_ms": 31655.38
+      }
+    },
+    "alias": {
+      "bigquery_no_embeddings": {
+        "requests": 6,
+        "correct": 5,
+        "successful": 5,
+        "p50_ms": 5842.28,
+        "p95_ms": 6392.34
+      },
+      "bigquery_native_embeddings": {
+        "requests": 6,
+        "correct": 6,
+        "successful": 6,
+        "p50_ms": 6612.475,
+        "p95_ms": 8460.44
+      },
+      "spanner_no_embeddings": {
+        "requests": 6,
+        "correct": 6,
+        "successful": 6,
+        "p50_ms": 5333.32,
+        "p95_ms": 5651.15
+      },
+      "spanner_native_embeddings": {
+        "requests": 6,
+        "correct": 6,
+        "successful": 6,
+        "p50_ms": 5068.995,
+        "p95_ms": 5389.0
+      }
+    }
+  },
+  "failure_counts": {
+    "bigquery_no_embeddings": {
+      "quota_429": 1,
+      "executed_incorrect": 0
+    },
+    "bigquery_native_embeddings": {
+      "quota_429": 1,
+      "executed_incorrect": 0
+    },
+    "spanner_no_embeddings": {
+      "quota_429": 1,
+      "executed_incorrect": 0
+    },
+    "spanner_native_embeddings": {
+      "quota_429": 0,
+      "executed_incorrect": 0
+    }
+  }
+}

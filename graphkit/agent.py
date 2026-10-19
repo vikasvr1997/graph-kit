@@ -68,9 +68,11 @@ class DatasetAgent:
     """Reuse this instance to avoid loading schema and opening clients per question.
 
     Inject ask(prompt)->dict and embed_question(text)->vector for other providers.
+    Set use_embeddings=False to pass the full approved catalog without a vector
+    artifact or embedding calls; embed_question and embedding_model may be None.
     """
     def __init__(self, workspace, ask, embed_question, embedding_model, adapter=None,
-                 *, retrieve_context=None):
+                 *, retrieve_context=None, use_embeddings=True):
         self.spec = workspace.approved()
         if self.spec is None:
             raise ValueError('Approve the graph first.')
@@ -78,8 +80,11 @@ class DatasetAgent:
         validate(self.catalog, self.spec, workspace.load_scan())
         if not self.catalog.approved:
             raise ValueError('Approve semantic metadata first.')
-        self.index = load_index(self.catalog, workspace.dir / 'embeddings.json')
-        if embedding_model != self.index['model']:
+        if not use_embeddings and retrieve_context is not None:
+            raise ValueError('Full-catalog mode cannot also use an embedding retriever.')
+        self.use_embeddings = use_embeddings
+        self.index = load_index(self.catalog, workspace.dir / 'embeddings.json') if use_embeddings else None
+        if use_embeddings and embedding_model != self.index['model']:
             raise ValueError('Question and catalog embedding models must match.')
         self.adapter = adapter or open_adapter(self.spec.backend, self.spec.location)
         self.ask, self.embed_question = ask, embed_question
@@ -93,10 +98,16 @@ class DatasetAgent:
         if mode not in ('auto', 'sql', 'gql') or not question.strip() or not 1 <= max_rows <= 1000 or top_k < 1:
             raise ValueError('Invalid question, mode or limits.')
         started = time.perf_counter()
-        hits = (self.retrieve_context(question, top_k) if self.retrieve_context else
-                retrieve(self.catalog, self.index, self.embed_question(question), top_k))
+        if not self.use_embeddings:
+            # Uniform scores denote unranked context. No embedding artifact or
+            # question embedding is read/computed in this baseline.
+            hits = [{'item': asdict(item), 'score': 0.0} for item in self.catalog.items]
+        else:
+            hits = (self.retrieve_context(question, top_k) if self.retrieve_context else
+                    retrieve(self.catalog, self.index, self.embed_question(question), top_k))
         approved_items = {x.id: asdict(x) for x in self.catalog.items}
-        if not hits or len(hits) > top_k or any(
+        context_limit = top_k if self.use_embeddings else len(self.catalog.items)
+        if not hits or len(hits) > context_limit or any(
             not isinstance(h, dict) or not isinstance(h.get('item'), dict)
             or h['item'].get('id') not in approved_items
             or h['item'] != approved_items[h['item']['id']]

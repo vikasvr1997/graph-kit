@@ -99,6 +99,48 @@ def test_remote_retrieval_drives_agent_without_local_embedding(reviewed):
     assert answer['rows'] == adapter.run_readonly(sql).rows
 
 
+def test_no_embedding_mode_needs_no_vectors_and_passes_full_catalog(reviewed):
+    ws, adapter = reviewed
+    (ws.dir / 'embeddings.json').unlink()
+    catalog = Catalog.load(ws.dir / 'semantic.approved.json')
+    sql = 'SELECT COUNT(*) AS n FROM "suppliers"'
+    def ask(prompt):
+        if prompt.startswith('Explain'):
+            return {'answer': 'Count from executed evidence'}
+        context = json.loads(prompt.split('\n', 1)[1])
+        assert {h['item']['id'] for h in context['semantic_context']} == {x.id for x in catalog.items}
+        return {'mode': 'sql', 'query': sql, 'references': ['table:suppliers']}
+    agent = DatasetAgent(ws, ask, None, None, adapter, use_embeddings=False)
+    assert agent.index is None
+    assert agent.answer('Count suppliers', mode='sql')['rows'] == adapter.run_readonly(sql).rows
+    with pytest.raises(ValueError, match='Full-catalog mode'):
+        DatasetAgent(ws, ask, None, None, adapter, use_embeddings=False,
+                     retrieve_context=lambda q, k: [])
+
+
+def test_spanner_retriever_uses_typed_vectors_and_catalog_filter(reviewed):
+    from graphkit.spanner_retrieval import SpannerCatalogRetriever
+    ws, _ = reviewed
+    catalog = Catalog.load(ws.dir / 'semantic.approved.json')
+    class Snapshot:
+        def __enter__(self):return self
+        def __exit__(self, *args):return False
+        def execute_sql(self, sql, params, param_types, timeout):
+            assert 'COSINE_DISTANCE(embedding, @vector)' in sql
+            assert 'catalog_hash=@hash AND embedding_model=@model' in sql
+            assert params == {'vector': [1., 0.], 'hash': catalog.fingerprint(), 'model': 'test-model'}
+            assert param_types['vector'].array_element_type.code == 3  # FLOAT64
+            return [('table:suppliers', .125)]
+    class Database:
+        def snapshot(self):return Snapshot()
+    retriever = SpannerCatalogRetriever(Database(), 'Catalog', catalog, lambda q: [1., 0.],
+                                        'test-model', dimensions=2)
+    assert retriever('vendor', 1)[0]['score'] == pytest.approx(.875)
+    retriever.embed_question = lambda q: [0., 0.]
+    with pytest.raises(ValueError, match='Invalid question embedding'):
+        retriever('vendor')
+
+
 def test_bigquery_retriever_pins_catalog_version_and_parameterizes_question(reviewed):
     from graphkit.bqml import BigQueryCatalogRetriever
     ws, _ = reviewed

@@ -98,3 +98,49 @@ metadata. The local approved catalog and embedding artifacts are still required.
 Detailed results, generated SQL and local workspaces remain in ignored
 `graphkit_out/bqml_customers/`. Generation, inference, queries and storage incur
 ordinary cloud usage charges. No ANN index is needed for this small catalog.
+
+## Matched no-embedding/BigQuery/Spanner comparison
+
+`benchmark_retrieval_comparison.py` compares four SQL-agent paths: BigQuery
+without embeddings, BigQuery with native BQML/vector search, Spanner without
+embeddings, and Spanner with native exact cosine retrieval. It uses the existing
+matching eight-table `graphkit_validation` copies and the same 96-object catalog
+text. This differs from the original 13-table Customers_data catalog; the smaller
+shared schema makes the backend comparison controlled.
+
+```bash
+PYTHONPATH=. .venv/bin/python scripts/benchmark_retrieval_comparison.py prepare
+PYTHONPATH=. .venv/bin/python scripts/benchmark_retrieval_comparison.py benchmark --repeat=3
+PYTHONPATH=. .venv/bin/python scripts/report_retrieval_comparison.py
+```
+
+Preparation requires the earlier BQML remote model and the two reviewed freight
+workspaces. It generates 96 document vectors once through BigQuery ML, copies
+them into a separate Spanner catalog table and checks exact vector equality.
+Existing business tables, deployed catalogs and capacity are unchanged. The
+new vector tables persist and incur ordinary storage/query/model charges.
+
+`DatasetAgent(..., embed_question=None, embedding_model=None,
+use_embeddings=False)` supplies all reviewed semantic objects and aliases
+without loading any embedding artifact. Native paths use top-eight semantic
+retrieval. Graph-schema expansion remains identical. This tests full small
+catalog context against retrieved context, not a baseline lacking schema or
+business definitions.
+
+Before timing, the runner checks current schemas, row counts and independent SQL
+result equality across databases. The seven questions are each repeated three
+times per path (84 requests), rotating path order. It records correctness,
+failures, prompt token counts, stage timings and complete-answer medians/p95.
+Requests are sequential and this does not size concurrent or production capacity;
+the existing shared Spanner trial is not representative of provisioned production
+resources. Do not extrapolate these diagnostics to a load-test result.
+
+Checkpoints, business result rows, generated SQL and responses stay under ignored
+`graphkit_out/retrieval_comparison/`. Reruns archive the preceding checkpoint.
+The report generator refuses incomplete runs, saves an aggregate Markdown report
+under `reports/` and archives the completed raw run. SDK defaults are retained;
+the application does not retry or repair failed requests.
+
+The report also saves an aggregate JSON baseline with metadata, counts and
+percentiles alongside the Markdown. It contains no business result rows and can
+be committed for comparison with subsequent runs.

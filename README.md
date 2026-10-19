@@ -247,6 +247,9 @@ SQLite has a 10-second VM progress deadline.
 - Retrieval defaults to an in-memory cosine search over the local approved
   index. `BigQueryCatalogRetriever` optionally embeds questions through BigQuery
   ML and performs native exact `VECTOR_SEARCH` over a versioned cloud catalog.
+  `SpannerCatalogRetriever` supports native exact cosine retrieval. Set
+  `use_embeddings=False` on DatasetAgent for full approved-catalog context
+  without embedding artifacts or question-embedding calls.
   Server-side ANN/index deployment is not implemented. Keep approved local
   artifacts with the serving deployment; scale retrieval independently when the
   catalog grows. See [BQML evaluation](scripts/README.md#bigquery-ml-catalog-evaluation).
@@ -290,6 +293,13 @@ The [BigQuery ML catalog evaluation](reports/bqml-customers-benchmark-2026-10-19
 generates schema embeddings directly in `Customers_data` and compares native
 BigQuery vector retrieval with local retrieval over the same vectors, including
 complete-answer correctness, latency and model-capacity failures.
+
+The [matched retrieval comparison](scripts/README.md#matched-no-embeddingbigqueryspanner-comparison)
+tests full-catalog context without embeddings against native BigQuery and
+Spanner vector retrieval, using identical business data and document vectors.
+The [four-way results](reports/retrieval-comparison-2026-10-19.md) and
+[aggregate JSON baseline](reports/retrieval-comparison-2026-10-19.json) preserve
+correctness, errors, stage timings and complex-question comparisons.
 
 For fair measurements, set `use_query_cache: false` in a BigQuery graph's location
 before creating its approved semantic revision. Serving otherwise defaults to
