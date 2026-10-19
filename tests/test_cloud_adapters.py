@@ -137,3 +137,11 @@ def test_spanner_reads_interleaving_and_foreign_keys():
     # order_items only joins two tables, so it becomes an edge between them.
     (e,) = spec.edges
     assert (e.table, e.source, e.dest, e.key) == ("order_items", "Order", "Product", ["order_id", "item_id"])
+
+
+def test_spanner_discovery_excludes_pipeline_control_tables():
+    db = FakeSpanner()
+    db.cols = {**db.cols, "GraphkitPipelineLock": [], "GraphkitPipelineRuns": [],
+               "GraphkitSemantic_catalog": []}
+    adapter = SpannerAdapter({"project": "p", "instance": "i", "database": "d"}, database=db)
+    assert adapter.list_tables() == ["order_items", "orders", "products"]

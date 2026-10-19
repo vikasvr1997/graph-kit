@@ -1,0 +1,29 @@
+CREATE TABLE `customers` (`customer_id` STRING(256) NOT NULL, `customer_name` STRING(MAX), `customer_type` STRING(MAX), `credit_terms_days` INT64, `primary_freight_type` STRING(MAX), `account_status` STRING(MAX), `contract_start_date` DATE, `annual_revenue_potential` INT64) PRIMARY KEY (`customer_id`);
+
+CREATE TABLE `drivers` (`driver_id` STRING(256) NOT NULL, `first_name` STRING(MAX), `last_name` STRING(MAX), `hire_date` DATE, `termination_date` DATE, `license_number` STRING(MAX), `license_state` STRING(MAX), `date_of_birth` DATE, `home_terminal` STRING(MAX), `employment_status` STRING(MAX), `cdl_class` STRING(MAX), `years_experience` INT64) PRIMARY KEY (`driver_id`);
+
+CREATE TABLE `facilities` (`facility_id` STRING(256) NOT NULL, `facility_name` STRING(MAX), `facility_type` STRING(MAX), `city` STRING(MAX), `state` STRING(MAX), `latitude` FLOAT64, `longitude` FLOAT64, `dock_doors` INT64, `operating_hours` STRING(MAX)) PRIMARY KEY (`facility_id`);
+
+CREATE TABLE `routes` (`route_id` STRING(256) NOT NULL, `origin_city` STRING(MAX), `origin_state` STRING(MAX), `destination_city` STRING(MAX), `destination_state` STRING(MAX), `typical_distance_miles` INT64, `base_rate_per_mile` FLOAT64, `fuel_surcharge_rate` FLOAT64, `typical_transit_days` INT64) PRIMARY KEY (`route_id`);
+
+CREATE TABLE `trailers` (`trailer_id` STRING(256) NOT NULL, `trailer_number` INT64, `trailer_type` STRING(MAX), `length_feet` INT64, `model_year` INT64, `vin` STRING(MAX), `acquisition_date` DATE, `status` STRING(MAX), `current_location` STRING(MAX)) PRIMARY KEY (`trailer_id`);
+
+CREATE TABLE `loads` (`load_id` STRING(256) NOT NULL, `customer_id` STRING(MAX), `route_id` STRING(MAX), `load_date` DATE, `load_type` STRING(MAX), `weight_lbs` INT64, `pieces` INT64, `revenue` FLOAT64, `fuel_surcharge` FLOAT64, `accessorial_charges` INT64, `load_status` STRING(MAX), `booking_type` STRING(MAX)) PRIMARY KEY (`load_id`);
+
+CREATE TABLE `trips` (`trip_id` STRING(256) NOT NULL, `load_id` STRING(MAX), `driver_id` STRING(MAX), `truck_id` STRING(MAX), `trailer_id` STRING(MAX), `dispatch_date` DATE, `actual_distance_miles` INT64, `actual_duration_hours` FLOAT64, `fuel_gallons_used` FLOAT64, `average_mpg` FLOAT64, `idle_time_hours` FLOAT64, `trip_status` STRING(MAX)) PRIMARY KEY (`trip_id`);
+
+CREATE TABLE `events` (`event_id` STRING(256) NOT NULL, `load_id` STRING(MAX), `trip_id` STRING(MAX), `event_type` STRING(MAX), `facility_id` STRING(MAX), `scheduled_datetime` TIMESTAMP, `actual_datetime` TIMESTAMP, `detention_minutes` INT64, `on_time_flag` BOOL, `location_city` STRING(MAX), `location_state` STRING(MAX)) PRIMARY KEY (`event_id`);
+
+CREATE TABLE `fuel_purchases` (`fuel_purchase_id` STRING(256) NOT NULL, `trip_id` STRING(MAX), `truck_id` STRING(MAX), `driver_id` STRING(MAX), `purchase_date` TIMESTAMP, `location_city` STRING(MAX), `location_state` STRING(MAX), `gallons` FLOAT64, `price_per_gallon` FLOAT64, `total_cost` FLOAT64, `fuel_card_number` STRING(MAX)) PRIMARY KEY (`fuel_purchase_id`);
+
+CREATE TABLE `maintenance_records` (`maintenance_id` STRING(256) NOT NULL, `truck_id` STRING(MAX), `maintenance_date` DATE, `maintenance_type` STRING(MAX), `odometer_reading` INT64, `labor_hours` FLOAT64, `labor_cost` FLOAT64, `parts_cost` FLOAT64, `total_cost` FLOAT64, `facility_location` STRING(MAX), `downtime_hours` FLOAT64, `service_description` STRING(MAX)) PRIMARY KEY (`maintenance_id`);
+
+CREATE TABLE `safety_incidents` (`incident_id` STRING(256) NOT NULL, `trip_id` STRING(MAX), `truck_id` STRING(MAX), `driver_id` STRING(MAX), `incident_date` TIMESTAMP, `incident_type` STRING(MAX), `location_city` STRING(MAX), `location_state` STRING(MAX), `at_fault_flag` BOOL, `injury_flag` BOOL, `vehicle_damage_cost` FLOAT64, `cargo_damage_cost` FLOAT64, `claim_amount` FLOAT64, `preventable_flag` BOOL, `description` STRING(MAX)) PRIMARY KEY (`incident_id`);
+
+CREATE TABLE `delivery_monthly_metrics` (`driver_id` STRING(256) NOT NULL, `month` DATE NOT NULL, `trips_completed` INT64, `total_miles` INT64, `total_revenue` FLOAT64, `average_mpg` FLOAT64, `total_fuel_gallons` FLOAT64, `on_time_delivery_rate` FLOAT64, `average_idle_hours` FLOAT64) PRIMARY KEY (`driver_id`, `month`);
+
+CREATE TABLE `truck_utilization_metrics` (`truck_id` STRING(256) NOT NULL, `month` DATE NOT NULL, `trips_completed` INT64, `total_miles` INT64, `total_revenue` FLOAT64, `average_mpg` FLOAT64, `maintenance_events` INT64, `maintenance_cost` FLOAT64, `downtime_hours` FLOAT64, `utilization_rate` FLOAT64) PRIMARY KEY (`truck_id`, `month`);
+
+CREATE TABLE GraphkitPipelineLock (pipeline_id STRING(128) NOT NULL, run_id STRING(128) NOT NULL, started_at TIMESTAMP NOT NULL) PRIMARY KEY (pipeline_id);
+
+CREATE TABLE GraphkitPipelineRuns (run_id STRING(128) NOT NULL, snapshot_at TIMESTAMP NOT NULL, status STRING(32) NOT NULL, completed_at TIMESTAMP) PRIMARY KEY (run_id);

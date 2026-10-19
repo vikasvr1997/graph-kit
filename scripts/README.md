@@ -1,5 +1,10 @@
 # Live freight benchmark
 
+For the separate hourly 13-table replication workflow, see
+[Customers_data → Spanner](../pipelines/customers_to_spanner/README.md).
+`customers_pipeline.py render|run|verify` manages its metadata, execution and
+source/target validation. It uses native exports rather than a Python row loader.
+
 These scripts target `premium-odyssey-508202-k9` and deliberately use an isolated
 `graphkit_validation` BigQuery dataset and Spanner database. They are opt-in:
 normal tests never invoke them. Source `Customers_data` is read-only.

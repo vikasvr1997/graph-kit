@@ -1,0 +1,106 @@
+{
+  "project_id": "premium-odyssey-508202-k9",
+  "source_dataset": "Customers_data",
+  "region": "us-east1",
+  "spanner_instance": "graphkit-benchmark",
+  "spanner_database": "customers_serving",
+  "workflow_name": "customers-data-to-spanner",
+  "schedule": "0 * * * *",
+  "schedule_paused": false,
+  "time_zone": "America/Detroit",
+  "tables": [
+    {
+      "source": "customer_data",
+      "target": "customers",
+      "key": [
+        "customer_id"
+      ]
+    },
+    {
+      "source": "drivers",
+      "target": "drivers",
+      "key": [
+        "driver_id"
+      ]
+    },
+    {
+      "source": "facilities",
+      "target": "facilities",
+      "key": [
+        "facility_id"
+      ]
+    },
+    {
+      "source": "routes",
+      "target": "routes",
+      "key": [
+        "route_id"
+      ]
+    },
+    {
+      "source": "trailers",
+      "target": "trailers",
+      "key": [
+        "trailer_id"
+      ]
+    },
+    {
+      "source": "loads",
+      "target": "loads",
+      "key": [
+        "load_id"
+      ]
+    },
+    {
+      "source": "trips",
+      "target": "trips",
+      "key": [
+        "trip_id"
+      ]
+    },
+    {
+      "source": "daily-events",
+      "target": "events",
+      "key": [
+        "event_id"
+      ]
+    },
+    {
+      "source": "fuel_purchases",
+      "target": "fuel_purchases",
+      "key": [
+        "fuel_purchase_id"
+      ]
+    },
+    {
+      "source": "maintanance-records",
+      "target": "maintenance_records",
+      "key": [
+        "maintenance_id"
+      ]
+    },
+    {
+      "source": "safety-incidents",
+      "target": "safety_incidents",
+      "key": [
+        "incident_id"
+      ]
+    },
+    {
+      "source": "delivery-monthly-metrics",
+      "target": "delivery_monthly_metrics",
+      "key": [
+        "driver_id",
+        "month"
+      ]
+    },
+    {
+      "source": "truck-utilization-metrics",
+      "target": "truck_utilization_metrics",
+      "key": [
+        "truck_id",
+        "month"
+      ]
+    }
+  ]
+}

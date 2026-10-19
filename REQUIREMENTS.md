@@ -38,12 +38,18 @@ Cloud deployment and latency must be validated against real databases separately
 - Local cosine retrieval, approved relationship context and read-only SQL/GQL QA.
 - ADK-compatible `dataset_tools`, direct `DatasetAgent`, and `ask` CLI.
 - Full-path `agent-bench` p50/p95/p99 metrics with failure/abstention counts.
-- 48 passing offline tests; generated Terraform validated for both cloud backends.
+- Offline tests and generated Terraform validation for both cloud backends.
+- Native BigQuery-to-Spanner batch replication, explicit keys/schema, a shared
+  source snapshot, overlap protection and hourly scheduling. See
+  `pipelines/customers_to_spanner/README.md` for deployment and operating limits.
 
 ## Live validation
 - Isolated copies of Customers_data loaded into BigQuery and a free-trial Spanner instance.
 - Graph and semantic-table Terraform applied successfully on both backends.
 - Independent SQL, GQL and full-agent timing/correctness measurements are documented in reports/.
+- All 13 Customers_data tables replicated into `customers_serving`: 549,586 rows,
+  with matching counts, column aggregates and ordered samples. The initial native
+  export workflow completed in 149.26 seconds; hourly refresh is enabled.
 
 ## Remaining production work
 - Expand live BigQuery/Spanner validation beyond the freight benchmark; add workload quality and ambiguity evaluations.

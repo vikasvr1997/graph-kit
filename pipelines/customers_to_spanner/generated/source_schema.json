@@ -1,0 +1,749 @@
+{
+  "customer_data": {
+    "schema": [
+      {
+        "name": "customer_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "customer_name",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "customer_type",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "credit_terms_days",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "primary_freight_type",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "account_status",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "contract_start_date",
+        "type": "DATE",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "annual_revenue_potential",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      }
+    ]
+  },
+  "drivers": {
+    "schema": [
+      {
+        "name": "driver_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "first_name",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "last_name",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "hire_date",
+        "type": "DATE",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "termination_date",
+        "type": "DATE",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "license_number",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "license_state",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "date_of_birth",
+        "type": "DATE",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "home_terminal",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "employment_status",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "cdl_class",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "years_experience",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      }
+    ]
+  },
+  "facilities": {
+    "schema": [
+      {
+        "name": "facility_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "facility_name",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "facility_type",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "city",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "state",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "latitude",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "longitude",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "dock_doors",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "operating_hours",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      }
+    ]
+  },
+  "routes": {
+    "schema": [
+      {
+        "name": "route_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "origin_city",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "origin_state",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "destination_city",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "destination_state",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "typical_distance_miles",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "base_rate_per_mile",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "fuel_surcharge_rate",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "typical_transit_days",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      }
+    ]
+  },
+  "trailers": {
+    "schema": [
+      {
+        "name": "trailer_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "trailer_number",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "trailer_type",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "length_feet",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "model_year",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "vin",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "acquisition_date",
+        "type": "DATE",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "status",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "current_location",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      }
+    ]
+  },
+  "loads": {
+    "schema": [
+      {
+        "name": "load_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "customer_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "route_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "load_date",
+        "type": "DATE",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "load_type",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "weight_lbs",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "pieces",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "revenue",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "fuel_surcharge",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "accessorial_charges",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "load_status",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "booking_type",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      }
+    ]
+  },
+  "trips": {
+    "schema": [
+      {
+        "name": "trip_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "load_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "driver_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "truck_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "trailer_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "dispatch_date",
+        "type": "DATE",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "actual_distance_miles",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "actual_duration_hours",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "fuel_gallons_used",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "average_mpg",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "idle_time_hours",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "trip_status",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      }
+    ]
+  },
+  "daily-events": {
+    "schema": [
+      {
+        "name": "event_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "load_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "trip_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "event_type",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "facility_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "scheduled_datetime",
+        "type": "TIMESTAMP",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "actual_datetime",
+        "type": "TIMESTAMP",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "detention_minutes",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "on_time_flag",
+        "type": "BOOLEAN",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "location_city",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "location_state",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      }
+    ]
+  },
+  "fuel_purchases": {
+    "schema": [
+      {
+        "name": "fuel_purchase_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "trip_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "truck_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "driver_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "purchase_date",
+        "type": "TIMESTAMP",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "location_city",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "location_state",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "gallons",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "price_per_gallon",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "total_cost",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "fuel_card_number",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      }
+    ]
+  },
+  "maintanance-records": {
+    "schema": [
+      {
+        "name": "maintenance_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "truck_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "maintenance_date",
+        "type": "DATE",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "maintenance_type",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "odometer_reading",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "labor_hours",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "labor_cost",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "parts_cost",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "total_cost",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "facility_location",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "downtime_hours",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "service_description",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      }
+    ]
+  },
+  "safety-incidents": {
+    "schema": [
+      {
+        "name": "incident_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "trip_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "truck_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "driver_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "incident_date",
+        "type": "TIMESTAMP",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "incident_type",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "location_city",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "location_state",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "at_fault_flag",
+        "type": "BOOLEAN",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "injury_flag",
+        "type": "BOOLEAN",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "vehicle_damage_cost",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "cargo_damage_cost",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "claim_amount",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "preventable_flag",
+        "type": "BOOLEAN",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "description",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      }
+    ]
+  },
+  "delivery-monthly-metrics": {
+    "schema": [
+      {
+        "name": "driver_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "month",
+        "type": "DATE",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "trips_completed",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "total_miles",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "total_revenue",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "average_mpg",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "total_fuel_gallons",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "on_time_delivery_rate",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "average_idle_hours",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      }
+    ]
+  },
+  "truck-utilization-metrics": {
+    "schema": [
+      {
+        "name": "truck_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "month",
+        "type": "DATE",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "trips_completed",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "total_miles",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "total_revenue",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "average_mpg",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "maintenance_events",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "maintenance_cost",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "downtime_hours",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "utilization_rate",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      }
+    ]
+  }
+}

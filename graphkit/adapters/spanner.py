@@ -73,7 +73,7 @@ class SpannerAdapter(Adapter):
             "SELECT TABLE_NAME AS t FROM INFORMATION_SCHEMA.TABLES "
             "WHERE TABLE_SCHEMA = '' AND TABLE_TYPE = 'BASE TABLE' ORDER BY t"
         )
-        return [r["t"] for r in rows if not r["t"].lower().startswith("graphkitsemantic_")]
+        return [r["t"] for r in rows if not r["t"].lower().startswith(("graphkitsemantic_", "graphkitpipeline"))]
 
     def describe(self, table):
         cols = self._query(

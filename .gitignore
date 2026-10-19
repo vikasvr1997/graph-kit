@@ -9,3 +9,5 @@ demo/supply_chain.db
 .pytest_cache/
 .DS_Store
 graft/.cache/
+
+*.tfplan

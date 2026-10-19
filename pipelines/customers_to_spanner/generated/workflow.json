@@ -1,0 +1,1200 @@
+{
+  "main": {
+    "steps": [
+      {
+        "init": {
+          "assign": [
+            {
+              "run_id": "${sys.get_env(\"GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID\")}"
+            },
+            {
+              "snapshot": "${time.format(sys.now())}"
+            }
+          ]
+        }
+      },
+      {
+        "acquire_lock": {
+          "call": "commit_spanner",
+          "args": {
+            "database": "projects/premium-odyssey-508202-k9/instances/graphkit-benchmark/databases/customers_serving",
+            "mutations": [
+              {
+                "insert": {
+                  "table": "GraphkitPipelineLock",
+                  "columns": [
+                    "pipeline_id",
+                    "run_id",
+                    "started_at"
+                  ],
+                  "values": [
+                    [
+                      "customers-data-to-spanner",
+                      "${run_id}",
+                      "${snapshot}"
+                    ]
+                  ]
+                }
+              },
+              {
+                "insert": {
+                  "table": "GraphkitPipelineRuns",
+                  "columns": [
+                    "run_id",
+                    "snapshot_at",
+                    "status"
+                  ],
+                  "values": [
+                    [
+                      "${run_id}",
+                      "${snapshot}",
+                      "STARTED"
+                    ]
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "validate_keys": {
+          "call": "googleapis.bigquery.v2.jobs.insert",
+          "args": {
+            "projectId": "premium-odyssey-508202-k9",
+            "body": {
+              "jobReference": {
+                "projectId": "premium-odyssey-508202-k9",
+                "location": "us-east1",
+                "jobId": "${\"gk-\" + run_id + \"-preflight\"}"
+              },
+              "configuration": {
+                "jobTimeoutMs": "1800000",
+                "labels": {
+                  "pipeline": "customers_to_spanner"
+                },
+                "query": {
+                  "query": "ASSERT (SELECT COUNTIF(`customer_id` IS NULL OR CHAR_LENGTH(`customer_id`)>256)=0 AND COUNT(*)=COUNT(DISTINCT TO_JSON_STRING(STRUCT(`customer_id`))) FROM `premium-odyssey-508202-k9.Customers_data.customer_data` FOR SYSTEM_TIME AS OF @snapshot) AS 'customer_data: invalid primary key';\nASSERT (SELECT COUNTIF(`driver_id` IS NULL OR CHAR_LENGTH(`driver_id`)>256)=0 AND COUNT(*)=COUNT(DISTINCT TO_JSON_STRING(STRUCT(`driver_id`))) FROM `premium-odyssey-508202-k9.Customers_data.drivers` FOR SYSTEM_TIME AS OF @snapshot) AS 'drivers: invalid primary key';\nASSERT (SELECT COUNTIF(`facility_id` IS NULL OR CHAR_LENGTH(`facility_id`)>256)=0 AND COUNT(*)=COUNT(DISTINCT TO_JSON_STRING(STRUCT(`facility_id`))) FROM `premium-odyssey-508202-k9.Customers_data.facilities` FOR SYSTEM_TIME AS OF @snapshot) AS 'facilities: invalid primary key';\nASSERT (SELECT COUNTIF(`route_id` IS NULL OR CHAR_LENGTH(`route_id`)>256)=0 AND COUNT(*)=COUNT(DISTINCT TO_JSON_STRING(STRUCT(`route_id`))) FROM `premium-odyssey-508202-k9.Customers_data.routes` FOR SYSTEM_TIME AS OF @snapshot) AS 'routes: invalid primary key';\nASSERT (SELECT COUNTIF(`trailer_id` IS NULL OR CHAR_LENGTH(`trailer_id`)>256)=0 AND COUNT(*)=COUNT(DISTINCT TO_JSON_STRING(STRUCT(`trailer_id`))) FROM `premium-odyssey-508202-k9.Customers_data.trailers` FOR SYSTEM_TIME AS OF @snapshot) AS 'trailers: invalid primary key';\nASSERT (SELECT COUNTIF(`load_id` IS NULL OR CHAR_LENGTH(`load_id`)>256)=0 AND COUNT(*)=COUNT(DISTINCT TO_JSON_STRING(STRUCT(`load_id`))) FROM `premium-odyssey-508202-k9.Customers_data.loads` FOR SYSTEM_TIME AS OF @snapshot) AS 'loads: invalid primary key';\nASSERT (SELECT COUNTIF(`trip_id` IS NULL OR CHAR_LENGTH(`trip_id`)>256)=0 AND COUNT(*)=COUNT(DISTINCT TO_JSON_STRING(STRUCT(`trip_id`))) FROM `premium-odyssey-508202-k9.Customers_data.trips` FOR SYSTEM_TIME AS OF @snapshot) AS 'trips: invalid primary key';\nASSERT (SELECT COUNTIF(`event_id` IS NULL OR CHAR_LENGTH(`event_id`)>256)=0 AND COUNT(*)=COUNT(DISTINCT TO_JSON_STRING(STRUCT(`event_id`))) FROM `premium-odyssey-508202-k9.Customers_data.daily-events` FOR SYSTEM_TIME AS OF @snapshot) AS 'daily-events: invalid primary key';\nASSERT (SELECT COUNTIF(`fuel_purchase_id` IS NULL OR CHAR_LENGTH(`fuel_purchase_id`)>256)=0 AND COUNT(*)=COUNT(DISTINCT TO_JSON_STRING(STRUCT(`fuel_purchase_id`))) FROM `premium-odyssey-508202-k9.Customers_data.fuel_purchases` FOR SYSTEM_TIME AS OF @snapshot) AS 'fuel_purchases: invalid primary key';\nASSERT (SELECT COUNTIF(`maintenance_id` IS NULL OR CHAR_LENGTH(`maintenance_id`)>256)=0 AND COUNT(*)=COUNT(DISTINCT TO_JSON_STRING(STRUCT(`maintenance_id`))) FROM `premium-odyssey-508202-k9.Customers_data.maintanance-records` FOR SYSTEM_TIME AS OF @snapshot) AS 'maintanance-records: invalid primary key';\nASSERT (SELECT COUNTIF(`incident_id` IS NULL OR CHAR_LENGTH(`incident_id`)>256)=0 AND COUNT(*)=COUNT(DISTINCT TO_JSON_STRING(STRUCT(`incident_id`))) FROM `premium-odyssey-508202-k9.Customers_data.safety-incidents` FOR SYSTEM_TIME AS OF @snapshot) AS 'safety-incidents: invalid primary key';\nASSERT (SELECT COUNTIF(`driver_id` IS NULL OR `month` IS NULL OR CHAR_LENGTH(`driver_id`)>256)=0 AND COUNT(*)=COUNT(DISTINCT TO_JSON_STRING(STRUCT(`driver_id`, `month`))) FROM `premium-odyssey-508202-k9.Customers_data.delivery-monthly-metrics` FOR SYSTEM_TIME AS OF @snapshot) AS 'delivery-monthly-metrics: invalid primary key';\nASSERT (SELECT COUNTIF(`truck_id` IS NULL OR `month` IS NULL OR CHAR_LENGTH(`truck_id`)>256)=0 AND COUNT(*)=COUNT(DISTINCT TO_JSON_STRING(STRUCT(`truck_id`, `month`))) FROM `premium-odyssey-508202-k9.Customers_data.truck-utilization-metrics` FOR SYSTEM_TIME AS OF @snapshot) AS 'truck-utilization-metrics: invalid primary key';",
+                  "useLegacySql": false,
+                  "useQueryCache": false,
+                  "maximumBytesBilled": "1073741824",
+                  "parameterMode": "NAMED",
+                  "queryParameters": [
+                    {
+                      "name": "snapshot",
+                      "parameterType": {
+                        "type": "TIMESTAMP"
+                      },
+                      "parameterValue": {
+                        "value": "${snapshot}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "connector_params": {
+              "timeout": 2100,
+              "polling_policy": {
+                "initial_delay": 1,
+                "multiplier": 1.5,
+                "max_delay": 15
+              }
+            }
+          },
+          "result": "job"
+        }
+      },
+      {
+        "check_validate_keys": {
+          "switch": [
+            {
+              "condition": "${map.get(job, [\"status\", \"errorResult\"]) != null}",
+              "steps": [
+                {
+                  "fail_validate_keys": {
+                    "raise": "${job.status.errorResult}"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "clear_validate_keys": {
+          "assign": [
+            {
+              "job": null
+            }
+          ]
+        }
+      },
+      {
+        "export_customers": {
+          "call": "googleapis.bigquery.v2.jobs.insert",
+          "args": {
+            "projectId": "premium-odyssey-508202-k9",
+            "body": {
+              "jobReference": {
+                "projectId": "premium-odyssey-508202-k9",
+                "location": "us-east1",
+                "jobId": "${\"gk-\" + run_id + \"-0\"}"
+              },
+              "configuration": {
+                "jobTimeoutMs": "1800000",
+                "labels": {
+                  "pipeline": "customers_to_spanner"
+                },
+                "query": {
+                  "query": "EXPORT DATA OPTIONS(uri='https://spanner.googleapis.com/projects/premium-odyssey-508202-k9/instances/graphkit-benchmark/databases/customers_serving', format='CLOUD_SPANNER', spanner_options='''{\"table\": \"customers\", \"priority\": \"LOW\", \"tag\": \"graphkit_customers_sync\"}''') AS SELECT `customer_id`, `customer_name`, `customer_type`, `credit_terms_days`, `primary_freight_type`, `account_status`, `contract_start_date`, `annual_revenue_potential` FROM `premium-odyssey-508202-k9.Customers_data.customer_data` FOR SYSTEM_TIME AS OF @snapshot",
+                  "useLegacySql": false,
+                  "useQueryCache": false,
+                  "maximumBytesBilled": "1073741824",
+                  "parameterMode": "NAMED",
+                  "queryParameters": [
+                    {
+                      "name": "snapshot",
+                      "parameterType": {
+                        "type": "TIMESTAMP"
+                      },
+                      "parameterValue": {
+                        "value": "${snapshot}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "connector_params": {
+              "timeout": 2100,
+              "polling_policy": {
+                "initial_delay": 1,
+                "multiplier": 1.5,
+                "max_delay": 15
+              }
+            }
+          },
+          "result": "job"
+        }
+      },
+      {
+        "check_export_customers": {
+          "switch": [
+            {
+              "condition": "${map.get(job, [\"status\", \"errorResult\"]) != null}",
+              "steps": [
+                {
+                  "fail_export_customers": {
+                    "raise": "${job.status.errorResult}"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "clear_export_customers": {
+          "assign": [
+            {
+              "job": null
+            }
+          ]
+        }
+      },
+      {
+        "export_drivers": {
+          "call": "googleapis.bigquery.v2.jobs.insert",
+          "args": {
+            "projectId": "premium-odyssey-508202-k9",
+            "body": {
+              "jobReference": {
+                "projectId": "premium-odyssey-508202-k9",
+                "location": "us-east1",
+                "jobId": "${\"gk-\" + run_id + \"-1\"}"
+              },
+              "configuration": {
+                "jobTimeoutMs": "1800000",
+                "labels": {
+                  "pipeline": "customers_to_spanner"
+                },
+                "query": {
+                  "query": "EXPORT DATA OPTIONS(uri='https://spanner.googleapis.com/projects/premium-odyssey-508202-k9/instances/graphkit-benchmark/databases/customers_serving', format='CLOUD_SPANNER', spanner_options='''{\"table\": \"drivers\", \"priority\": \"LOW\", \"tag\": \"graphkit_customers_sync\"}''') AS SELECT `driver_id`, `first_name`, `last_name`, `hire_date`, `termination_date`, `license_number`, `license_state`, `date_of_birth`, `home_terminal`, `employment_status`, `cdl_class`, `years_experience` FROM `premium-odyssey-508202-k9.Customers_data.drivers` FOR SYSTEM_TIME AS OF @snapshot",
+                  "useLegacySql": false,
+                  "useQueryCache": false,
+                  "maximumBytesBilled": "1073741824",
+                  "parameterMode": "NAMED",
+                  "queryParameters": [
+                    {
+                      "name": "snapshot",
+                      "parameterType": {
+                        "type": "TIMESTAMP"
+                      },
+                      "parameterValue": {
+                        "value": "${snapshot}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "connector_params": {
+              "timeout": 2100,
+              "polling_policy": {
+                "initial_delay": 1,
+                "multiplier": 1.5,
+                "max_delay": 15
+              }
+            }
+          },
+          "result": "job"
+        }
+      },
+      {
+        "check_export_drivers": {
+          "switch": [
+            {
+              "condition": "${map.get(job, [\"status\", \"errorResult\"]) != null}",
+              "steps": [
+                {
+                  "fail_export_drivers": {
+                    "raise": "${job.status.errorResult}"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "clear_export_drivers": {
+          "assign": [
+            {
+              "job": null
+            }
+          ]
+        }
+      },
+      {
+        "export_facilities": {
+          "call": "googleapis.bigquery.v2.jobs.insert",
+          "args": {
+            "projectId": "premium-odyssey-508202-k9",
+            "body": {
+              "jobReference": {
+                "projectId": "premium-odyssey-508202-k9",
+                "location": "us-east1",
+                "jobId": "${\"gk-\" + run_id + \"-2\"}"
+              },
+              "configuration": {
+                "jobTimeoutMs": "1800000",
+                "labels": {
+                  "pipeline": "customers_to_spanner"
+                },
+                "query": {
+                  "query": "EXPORT DATA OPTIONS(uri='https://spanner.googleapis.com/projects/premium-odyssey-508202-k9/instances/graphkit-benchmark/databases/customers_serving', format='CLOUD_SPANNER', spanner_options='''{\"table\": \"facilities\", \"priority\": \"LOW\", \"tag\": \"graphkit_customers_sync\"}''') AS SELECT `facility_id`, `facility_name`, `facility_type`, `city`, `state`, `latitude`, `longitude`, `dock_doors`, `operating_hours` FROM `premium-odyssey-508202-k9.Customers_data.facilities` FOR SYSTEM_TIME AS OF @snapshot",
+                  "useLegacySql": false,
+                  "useQueryCache": false,
+                  "maximumBytesBilled": "1073741824",
+                  "parameterMode": "NAMED",
+                  "queryParameters": [
+                    {
+                      "name": "snapshot",
+                      "parameterType": {
+                        "type": "TIMESTAMP"
+                      },
+                      "parameterValue": {
+                        "value": "${snapshot}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "connector_params": {
+              "timeout": 2100,
+              "polling_policy": {
+                "initial_delay": 1,
+                "multiplier": 1.5,
+                "max_delay": 15
+              }
+            }
+          },
+          "result": "job"
+        }
+      },
+      {
+        "check_export_facilities": {
+          "switch": [
+            {
+              "condition": "${map.get(job, [\"status\", \"errorResult\"]) != null}",
+              "steps": [
+                {
+                  "fail_export_facilities": {
+                    "raise": "${job.status.errorResult}"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "clear_export_facilities": {
+          "assign": [
+            {
+              "job": null
+            }
+          ]
+        }
+      },
+      {
+        "export_routes": {
+          "call": "googleapis.bigquery.v2.jobs.insert",
+          "args": {
+            "projectId": "premium-odyssey-508202-k9",
+            "body": {
+              "jobReference": {
+                "projectId": "premium-odyssey-508202-k9",
+                "location": "us-east1",
+                "jobId": "${\"gk-\" + run_id + \"-3\"}"
+              },
+              "configuration": {
+                "jobTimeoutMs": "1800000",
+                "labels": {
+                  "pipeline": "customers_to_spanner"
+                },
+                "query": {
+                  "query": "EXPORT DATA OPTIONS(uri='https://spanner.googleapis.com/projects/premium-odyssey-508202-k9/instances/graphkit-benchmark/databases/customers_serving', format='CLOUD_SPANNER', spanner_options='''{\"table\": \"routes\", \"priority\": \"LOW\", \"tag\": \"graphkit_customers_sync\"}''') AS SELECT `route_id`, `origin_city`, `origin_state`, `destination_city`, `destination_state`, `typical_distance_miles`, `base_rate_per_mile`, `fuel_surcharge_rate`, `typical_transit_days` FROM `premium-odyssey-508202-k9.Customers_data.routes` FOR SYSTEM_TIME AS OF @snapshot",
+                  "useLegacySql": false,
+                  "useQueryCache": false,
+                  "maximumBytesBilled": "1073741824",
+                  "parameterMode": "NAMED",
+                  "queryParameters": [
+                    {
+                      "name": "snapshot",
+                      "parameterType": {
+                        "type": "TIMESTAMP"
+                      },
+                      "parameterValue": {
+                        "value": "${snapshot}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "connector_params": {
+              "timeout": 2100,
+              "polling_policy": {
+                "initial_delay": 1,
+                "multiplier": 1.5,
+                "max_delay": 15
+              }
+            }
+          },
+          "result": "job"
+        }
+      },
+      {
+        "check_export_routes": {
+          "switch": [
+            {
+              "condition": "${map.get(job, [\"status\", \"errorResult\"]) != null}",
+              "steps": [
+                {
+                  "fail_export_routes": {
+                    "raise": "${job.status.errorResult}"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "clear_export_routes": {
+          "assign": [
+            {
+              "job": null
+            }
+          ]
+        }
+      },
+      {
+        "export_trailers": {
+          "call": "googleapis.bigquery.v2.jobs.insert",
+          "args": {
+            "projectId": "premium-odyssey-508202-k9",
+            "body": {
+              "jobReference": {
+                "projectId": "premium-odyssey-508202-k9",
+                "location": "us-east1",
+                "jobId": "${\"gk-\" + run_id + \"-4\"}"
+              },
+              "configuration": {
+                "jobTimeoutMs": "1800000",
+                "labels": {
+                  "pipeline": "customers_to_spanner"
+                },
+                "query": {
+                  "query": "EXPORT DATA OPTIONS(uri='https://spanner.googleapis.com/projects/premium-odyssey-508202-k9/instances/graphkit-benchmark/databases/customers_serving', format='CLOUD_SPANNER', spanner_options='''{\"table\": \"trailers\", \"priority\": \"LOW\", \"tag\": \"graphkit_customers_sync\"}''') AS SELECT `trailer_id`, `trailer_number`, `trailer_type`, `length_feet`, `model_year`, `vin`, `acquisition_date`, `status`, `current_location` FROM `premium-odyssey-508202-k9.Customers_data.trailers` FOR SYSTEM_TIME AS OF @snapshot",
+                  "useLegacySql": false,
+                  "useQueryCache": false,
+                  "maximumBytesBilled": "1073741824",
+                  "parameterMode": "NAMED",
+                  "queryParameters": [
+                    {
+                      "name": "snapshot",
+                      "parameterType": {
+                        "type": "TIMESTAMP"
+                      },
+                      "parameterValue": {
+                        "value": "${snapshot}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "connector_params": {
+              "timeout": 2100,
+              "polling_policy": {
+                "initial_delay": 1,
+                "multiplier": 1.5,
+                "max_delay": 15
+              }
+            }
+          },
+          "result": "job"
+        }
+      },
+      {
+        "check_export_trailers": {
+          "switch": [
+            {
+              "condition": "${map.get(job, [\"status\", \"errorResult\"]) != null}",
+              "steps": [
+                {
+                  "fail_export_trailers": {
+                    "raise": "${job.status.errorResult}"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "clear_export_trailers": {
+          "assign": [
+            {
+              "job": null
+            }
+          ]
+        }
+      },
+      {
+        "export_loads": {
+          "call": "googleapis.bigquery.v2.jobs.insert",
+          "args": {
+            "projectId": "premium-odyssey-508202-k9",
+            "body": {
+              "jobReference": {
+                "projectId": "premium-odyssey-508202-k9",
+                "location": "us-east1",
+                "jobId": "${\"gk-\" + run_id + \"-5\"}"
+              },
+              "configuration": {
+                "jobTimeoutMs": "1800000",
+                "labels": {
+                  "pipeline": "customers_to_spanner"
+                },
+                "query": {
+                  "query": "EXPORT DATA OPTIONS(uri='https://spanner.googleapis.com/projects/premium-odyssey-508202-k9/instances/graphkit-benchmark/databases/customers_serving', format='CLOUD_SPANNER', spanner_options='''{\"table\": \"loads\", \"priority\": \"LOW\", \"tag\": \"graphkit_customers_sync\"}''') AS SELECT `load_id`, `customer_id`, `route_id`, `load_date`, `load_type`, `weight_lbs`, `pieces`, `revenue`, `fuel_surcharge`, `accessorial_charges`, `load_status`, `booking_type` FROM `premium-odyssey-508202-k9.Customers_data.loads` FOR SYSTEM_TIME AS OF @snapshot",
+                  "useLegacySql": false,
+                  "useQueryCache": false,
+                  "maximumBytesBilled": "1073741824",
+                  "parameterMode": "NAMED",
+                  "queryParameters": [
+                    {
+                      "name": "snapshot",
+                      "parameterType": {
+                        "type": "TIMESTAMP"
+                      },
+                      "parameterValue": {
+                        "value": "${snapshot}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "connector_params": {
+              "timeout": 2100,
+              "polling_policy": {
+                "initial_delay": 1,
+                "multiplier": 1.5,
+                "max_delay": 15
+              }
+            }
+          },
+          "result": "job"
+        }
+      },
+      {
+        "check_export_loads": {
+          "switch": [
+            {
+              "condition": "${map.get(job, [\"status\", \"errorResult\"]) != null}",
+              "steps": [
+                {
+                  "fail_export_loads": {
+                    "raise": "${job.status.errorResult}"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "clear_export_loads": {
+          "assign": [
+            {
+              "job": null
+            }
+          ]
+        }
+      },
+      {
+        "export_trips": {
+          "call": "googleapis.bigquery.v2.jobs.insert",
+          "args": {
+            "projectId": "premium-odyssey-508202-k9",
+            "body": {
+              "jobReference": {
+                "projectId": "premium-odyssey-508202-k9",
+                "location": "us-east1",
+                "jobId": "${\"gk-\" + run_id + \"-6\"}"
+              },
+              "configuration": {
+                "jobTimeoutMs": "1800000",
+                "labels": {
+                  "pipeline": "customers_to_spanner"
+                },
+                "query": {
+                  "query": "EXPORT DATA OPTIONS(uri='https://spanner.googleapis.com/projects/premium-odyssey-508202-k9/instances/graphkit-benchmark/databases/customers_serving', format='CLOUD_SPANNER', spanner_options='''{\"table\": \"trips\", \"priority\": \"LOW\", \"tag\": \"graphkit_customers_sync\"}''') AS SELECT `trip_id`, `load_id`, `driver_id`, `truck_id`, `trailer_id`, `dispatch_date`, `actual_distance_miles`, `actual_duration_hours`, `fuel_gallons_used`, `average_mpg`, `idle_time_hours`, `trip_status` FROM `premium-odyssey-508202-k9.Customers_data.trips` FOR SYSTEM_TIME AS OF @snapshot",
+                  "useLegacySql": false,
+                  "useQueryCache": false,
+                  "maximumBytesBilled": "1073741824",
+                  "parameterMode": "NAMED",
+                  "queryParameters": [
+                    {
+                      "name": "snapshot",
+                      "parameterType": {
+                        "type": "TIMESTAMP"
+                      },
+                      "parameterValue": {
+                        "value": "${snapshot}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "connector_params": {
+              "timeout": 2100,
+              "polling_policy": {
+                "initial_delay": 1,
+                "multiplier": 1.5,
+                "max_delay": 15
+              }
+            }
+          },
+          "result": "job"
+        }
+      },
+      {
+        "check_export_trips": {
+          "switch": [
+            {
+              "condition": "${map.get(job, [\"status\", \"errorResult\"]) != null}",
+              "steps": [
+                {
+                  "fail_export_trips": {
+                    "raise": "${job.status.errorResult}"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "clear_export_trips": {
+          "assign": [
+            {
+              "job": null
+            }
+          ]
+        }
+      },
+      {
+        "export_events": {
+          "call": "googleapis.bigquery.v2.jobs.insert",
+          "args": {
+            "projectId": "premium-odyssey-508202-k9",
+            "body": {
+              "jobReference": {
+                "projectId": "premium-odyssey-508202-k9",
+                "location": "us-east1",
+                "jobId": "${\"gk-\" + run_id + \"-7\"}"
+              },
+              "configuration": {
+                "jobTimeoutMs": "1800000",
+                "labels": {
+                  "pipeline": "customers_to_spanner"
+                },
+                "query": {
+                  "query": "EXPORT DATA OPTIONS(uri='https://spanner.googleapis.com/projects/premium-odyssey-508202-k9/instances/graphkit-benchmark/databases/customers_serving', format='CLOUD_SPANNER', spanner_options='''{\"table\": \"events\", \"priority\": \"LOW\", \"tag\": \"graphkit_customers_sync\"}''') AS SELECT `event_id`, `load_id`, `trip_id`, `event_type`, `facility_id`, `scheduled_datetime`, `actual_datetime`, `detention_minutes`, `on_time_flag`, `location_city`, `location_state` FROM `premium-odyssey-508202-k9.Customers_data.daily-events` FOR SYSTEM_TIME AS OF @snapshot",
+                  "useLegacySql": false,
+                  "useQueryCache": false,
+                  "maximumBytesBilled": "1073741824",
+                  "parameterMode": "NAMED",
+                  "queryParameters": [
+                    {
+                      "name": "snapshot",
+                      "parameterType": {
+                        "type": "TIMESTAMP"
+                      },
+                      "parameterValue": {
+                        "value": "${snapshot}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "connector_params": {
+              "timeout": 2100,
+              "polling_policy": {
+                "initial_delay": 1,
+                "multiplier": 1.5,
+                "max_delay": 15
+              }
+            }
+          },
+          "result": "job"
+        }
+      },
+      {
+        "check_export_events": {
+          "switch": [
+            {
+              "condition": "${map.get(job, [\"status\", \"errorResult\"]) != null}",
+              "steps": [
+                {
+                  "fail_export_events": {
+                    "raise": "${job.status.errorResult}"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "clear_export_events": {
+          "assign": [
+            {
+              "job": null
+            }
+          ]
+        }
+      },
+      {
+        "export_fuel_purchases": {
+          "call": "googleapis.bigquery.v2.jobs.insert",
+          "args": {
+            "projectId": "premium-odyssey-508202-k9",
+            "body": {
+              "jobReference": {
+                "projectId": "premium-odyssey-508202-k9",
+                "location": "us-east1",
+                "jobId": "${\"gk-\" + run_id + \"-8\"}"
+              },
+              "configuration": {
+                "jobTimeoutMs": "1800000",
+                "labels": {
+                  "pipeline": "customers_to_spanner"
+                },
+                "query": {
+                  "query": "EXPORT DATA OPTIONS(uri='https://spanner.googleapis.com/projects/premium-odyssey-508202-k9/instances/graphkit-benchmark/databases/customers_serving', format='CLOUD_SPANNER', spanner_options='''{\"table\": \"fuel_purchases\", \"priority\": \"LOW\", \"tag\": \"graphkit_customers_sync\"}''') AS SELECT `fuel_purchase_id`, `trip_id`, `truck_id`, `driver_id`, `purchase_date`, `location_city`, `location_state`, `gallons`, `price_per_gallon`, `total_cost`, `fuel_card_number` FROM `premium-odyssey-508202-k9.Customers_data.fuel_purchases` FOR SYSTEM_TIME AS OF @snapshot",
+                  "useLegacySql": false,
+                  "useQueryCache": false,
+                  "maximumBytesBilled": "1073741824",
+                  "parameterMode": "NAMED",
+                  "queryParameters": [
+                    {
+                      "name": "snapshot",
+                      "parameterType": {
+                        "type": "TIMESTAMP"
+                      },
+                      "parameterValue": {
+                        "value": "${snapshot}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "connector_params": {
+              "timeout": 2100,
+              "polling_policy": {
+                "initial_delay": 1,
+                "multiplier": 1.5,
+                "max_delay": 15
+              }
+            }
+          },
+          "result": "job"
+        }
+      },
+      {
+        "check_export_fuel_purchases": {
+          "switch": [
+            {
+              "condition": "${map.get(job, [\"status\", \"errorResult\"]) != null}",
+              "steps": [
+                {
+                  "fail_export_fuel_purchases": {
+                    "raise": "${job.status.errorResult}"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "clear_export_fuel_purchases": {
+          "assign": [
+            {
+              "job": null
+            }
+          ]
+        }
+      },
+      {
+        "export_maintenance_records": {
+          "call": "googleapis.bigquery.v2.jobs.insert",
+          "args": {
+            "projectId": "premium-odyssey-508202-k9",
+            "body": {
+              "jobReference": {
+                "projectId": "premium-odyssey-508202-k9",
+                "location": "us-east1",
+                "jobId": "${\"gk-\" + run_id + \"-9\"}"
+              },
+              "configuration": {
+                "jobTimeoutMs": "1800000",
+                "labels": {
+                  "pipeline": "customers_to_spanner"
+                },
+                "query": {
+                  "query": "EXPORT DATA OPTIONS(uri='https://spanner.googleapis.com/projects/premium-odyssey-508202-k9/instances/graphkit-benchmark/databases/customers_serving', format='CLOUD_SPANNER', spanner_options='''{\"table\": \"maintenance_records\", \"priority\": \"LOW\", \"tag\": \"graphkit_customers_sync\"}''') AS SELECT `maintenance_id`, `truck_id`, `maintenance_date`, `maintenance_type`, `odometer_reading`, `labor_hours`, `labor_cost`, `parts_cost`, `total_cost`, `facility_location`, `downtime_hours`, `service_description` FROM `premium-odyssey-508202-k9.Customers_data.maintanance-records` FOR SYSTEM_TIME AS OF @snapshot",
+                  "useLegacySql": false,
+                  "useQueryCache": false,
+                  "maximumBytesBilled": "1073741824",
+                  "parameterMode": "NAMED",
+                  "queryParameters": [
+                    {
+                      "name": "snapshot",
+                      "parameterType": {
+                        "type": "TIMESTAMP"
+                      },
+                      "parameterValue": {
+                        "value": "${snapshot}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "connector_params": {
+              "timeout": 2100,
+              "polling_policy": {
+                "initial_delay": 1,
+                "multiplier": 1.5,
+                "max_delay": 15
+              }
+            }
+          },
+          "result": "job"
+        }
+      },
+      {
+        "check_export_maintenance_records": {
+          "switch": [
+            {
+              "condition": "${map.get(job, [\"status\", \"errorResult\"]) != null}",
+              "steps": [
+                {
+                  "fail_export_maintenance_records": {
+                    "raise": "${job.status.errorResult}"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "clear_export_maintenance_records": {
+          "assign": [
+            {
+              "job": null
+            }
+          ]
+        }
+      },
+      {
+        "export_safety_incidents": {
+          "call": "googleapis.bigquery.v2.jobs.insert",
+          "args": {
+            "projectId": "premium-odyssey-508202-k9",
+            "body": {
+              "jobReference": {
+                "projectId": "premium-odyssey-508202-k9",
+                "location": "us-east1",
+                "jobId": "${\"gk-\" + run_id + \"-10\"}"
+              },
+              "configuration": {
+                "jobTimeoutMs": "1800000",
+                "labels": {
+                  "pipeline": "customers_to_spanner"
+                },
+                "query": {
+                  "query": "EXPORT DATA OPTIONS(uri='https://spanner.googleapis.com/projects/premium-odyssey-508202-k9/instances/graphkit-benchmark/databases/customers_serving', format='CLOUD_SPANNER', spanner_options='''{\"table\": \"safety_incidents\", \"priority\": \"LOW\", \"tag\": \"graphkit_customers_sync\"}''') AS SELECT `incident_id`, `trip_id`, `truck_id`, `driver_id`, `incident_date`, `incident_type`, `location_city`, `location_state`, `at_fault_flag`, `injury_flag`, `vehicle_damage_cost`, `cargo_damage_cost`, `claim_amount`, `preventable_flag`, `description` FROM `premium-odyssey-508202-k9.Customers_data.safety-incidents` FOR SYSTEM_TIME AS OF @snapshot",
+                  "useLegacySql": false,
+                  "useQueryCache": false,
+                  "maximumBytesBilled": "1073741824",
+                  "parameterMode": "NAMED",
+                  "queryParameters": [
+                    {
+                      "name": "snapshot",
+                      "parameterType": {
+                        "type": "TIMESTAMP"
+                      },
+                      "parameterValue": {
+                        "value": "${snapshot}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "connector_params": {
+              "timeout": 2100,
+              "polling_policy": {
+                "initial_delay": 1,
+                "multiplier": 1.5,
+                "max_delay": 15
+              }
+            }
+          },
+          "result": "job"
+        }
+      },
+      {
+        "check_export_safety_incidents": {
+          "switch": [
+            {
+              "condition": "${map.get(job, [\"status\", \"errorResult\"]) != null}",
+              "steps": [
+                {
+                  "fail_export_safety_incidents": {
+                    "raise": "${job.status.errorResult}"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "clear_export_safety_incidents": {
+          "assign": [
+            {
+              "job": null
+            }
+          ]
+        }
+      },
+      {
+        "export_delivery_monthly_metrics": {
+          "call": "googleapis.bigquery.v2.jobs.insert",
+          "args": {
+            "projectId": "premium-odyssey-508202-k9",
+            "body": {
+              "jobReference": {
+                "projectId": "premium-odyssey-508202-k9",
+                "location": "us-east1",
+                "jobId": "${\"gk-\" + run_id + \"-11\"}"
+              },
+              "configuration": {
+                "jobTimeoutMs": "1800000",
+                "labels": {
+                  "pipeline": "customers_to_spanner"
+                },
+                "query": {
+                  "query": "EXPORT DATA OPTIONS(uri='https://spanner.googleapis.com/projects/premium-odyssey-508202-k9/instances/graphkit-benchmark/databases/customers_serving', format='CLOUD_SPANNER', spanner_options='''{\"table\": \"delivery_monthly_metrics\", \"priority\": \"LOW\", \"tag\": \"graphkit_customers_sync\"}''') AS SELECT `driver_id`, `month`, `trips_completed`, `total_miles`, `total_revenue`, `average_mpg`, `total_fuel_gallons`, `on_time_delivery_rate`, `average_idle_hours` FROM `premium-odyssey-508202-k9.Customers_data.delivery-monthly-metrics` FOR SYSTEM_TIME AS OF @snapshot",
+                  "useLegacySql": false,
+                  "useQueryCache": false,
+                  "maximumBytesBilled": "1073741824",
+                  "parameterMode": "NAMED",
+                  "queryParameters": [
+                    {
+                      "name": "snapshot",
+                      "parameterType": {
+                        "type": "TIMESTAMP"
+                      },
+                      "parameterValue": {
+                        "value": "${snapshot}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "connector_params": {
+              "timeout": 2100,
+              "polling_policy": {
+                "initial_delay": 1,
+                "multiplier": 1.5,
+                "max_delay": 15
+              }
+            }
+          },
+          "result": "job"
+        }
+      },
+      {
+        "check_export_delivery_monthly_metrics": {
+          "switch": [
+            {
+              "condition": "${map.get(job, [\"status\", \"errorResult\"]) != null}",
+              "steps": [
+                {
+                  "fail_export_delivery_monthly_metrics": {
+                    "raise": "${job.status.errorResult}"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "clear_export_delivery_monthly_metrics": {
+          "assign": [
+            {
+              "job": null
+            }
+          ]
+        }
+      },
+      {
+        "export_truck_utilization_metrics": {
+          "call": "googleapis.bigquery.v2.jobs.insert",
+          "args": {
+            "projectId": "premium-odyssey-508202-k9",
+            "body": {
+              "jobReference": {
+                "projectId": "premium-odyssey-508202-k9",
+                "location": "us-east1",
+                "jobId": "${\"gk-\" + run_id + \"-12\"}"
+              },
+              "configuration": {
+                "jobTimeoutMs": "1800000",
+                "labels": {
+                  "pipeline": "customers_to_spanner"
+                },
+                "query": {
+                  "query": "EXPORT DATA OPTIONS(uri='https://spanner.googleapis.com/projects/premium-odyssey-508202-k9/instances/graphkit-benchmark/databases/customers_serving', format='CLOUD_SPANNER', spanner_options='''{\"table\": \"truck_utilization_metrics\", \"priority\": \"LOW\", \"tag\": \"graphkit_customers_sync\"}''') AS SELECT `truck_id`, `month`, `trips_completed`, `total_miles`, `total_revenue`, `average_mpg`, `maintenance_events`, `maintenance_cost`, `downtime_hours`, `utilization_rate` FROM `premium-odyssey-508202-k9.Customers_data.truck-utilization-metrics` FOR SYSTEM_TIME AS OF @snapshot",
+                  "useLegacySql": false,
+                  "useQueryCache": false,
+                  "maximumBytesBilled": "1073741824",
+                  "parameterMode": "NAMED",
+                  "queryParameters": [
+                    {
+                      "name": "snapshot",
+                      "parameterType": {
+                        "type": "TIMESTAMP"
+                      },
+                      "parameterValue": {
+                        "value": "${snapshot}"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "connector_params": {
+              "timeout": 2100,
+              "polling_policy": {
+                "initial_delay": 1,
+                "multiplier": 1.5,
+                "max_delay": 15
+              }
+            }
+          },
+          "result": "job"
+        }
+      },
+      {
+        "check_export_truck_utilization_metrics": {
+          "switch": [
+            {
+              "condition": "${map.get(job, [\"status\", \"errorResult\"]) != null}",
+              "steps": [
+                {
+                  "fail_export_truck_utilization_metrics": {
+                    "raise": "${job.status.errorResult}"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "clear_export_truck_utilization_metrics": {
+          "assign": [
+            {
+              "job": null
+            }
+          ]
+        }
+      },
+      {
+        "complete": {
+          "call": "commit_spanner",
+          "args": {
+            "database": "projects/premium-odyssey-508202-k9/instances/graphkit-benchmark/databases/customers_serving",
+            "mutations": [
+              {
+                "update": {
+                  "table": "GraphkitPipelineRuns",
+                  "columns": [
+                    "run_id",
+                    "status",
+                    "completed_at"
+                  ],
+                  "values": [
+                    [
+                      "${run_id}",
+                      "SUCCEEDED",
+                      "${time.format(sys.now())}"
+                    ]
+                  ]
+                }
+              },
+              {
+                "delete": {
+                  "table": "GraphkitPipelineLock",
+                  "keySet": {
+                    "keys": [
+                      [
+                        "customers-data-to-spanner"
+                      ]
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "done": {
+          "return": {
+            "run_id": "${run_id}",
+            "snapshot": "${snapshot}",
+            "status": "SUCCEEDED",
+            "source_dataset": "Customers_data",
+            "tables": 13
+          }
+        }
+      }
+    ]
+  },
+  "commit_spanner": {
+    "params": [
+      "database",
+      "mutations"
+    ],
+    "steps": [
+      {
+        "create_session": {
+          "call": "googleapis.spanner.v1.projects.instances.databases.sessions.create",
+          "args": {
+            "database": "${database}",
+            "body": {}
+          },
+          "result": "session"
+        }
+      },
+      {
+        "write": {
+          "try": {
+            "call": "googleapis.spanner.v1.projects.instances.databases.sessions.commit",
+            "args": {
+              "session": "${session.name}",
+              "body": {
+                "singleUseTransaction": {
+                  "readWrite": {}
+                },
+                "mutations": "${mutations}"
+              }
+            },
+            "result": "committed"
+          },
+          "except": {
+            "as": "error",
+            "steps": [
+              {
+                "cleanup_error": {
+                  "call": "googleapis.spanner.v1.projects.instances.databases.sessions.delete",
+                  "args": {
+                    "name": "${session.name}"
+                  }
+                }
+              },
+              {
+                "raise_error": {
+                  "raise": "${error}"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "cleanup": {
+          "call": "googleapis.spanner.v1.projects.instances.databases.sessions.delete",
+          "args": {
+            "name": "${session.name}"
+          }
+        }
+      },
+      {
+        "result": {
+          "return": "${committed}"
+        }
+      }
+    ]
+  }
+}

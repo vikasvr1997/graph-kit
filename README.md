@@ -279,6 +279,11 @@ check complex agent answers. They are opt-in and create cloud resources only
 when explicitly run. Detailed timings stay in `graphkit_out/cloud_validation/`;
 aggregate findings are written to `reports/`.
 
+The [Customers_data hourly pipeline](pipelines/customers_to_spanner/README.md)
+uses native BigQuery exports, Cloud Workflows and Cloud Scheduler to upsert
+13 tables into a separate Spanner serving database. Terraform provisions its
+schema, service identities, scheduling and error monitoring.
+
 For fair measurements, set `use_query_cache: false` in a BigQuery graph's location
 before creating its approved semantic revision. Serving otherwise defaults to
 query caching. Metadata publishing batches up to 25 catalog objects per BigQuery
