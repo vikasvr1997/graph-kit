@@ -101,7 +101,7 @@ class BigQueryAdapter(Adapter):
             raise ValueError('Only SELECT statements may execute in the dataset agent.')
         def execute():
             job = self.client.query(sql, job_config=bigquery.QueryJobConfig(
-                maximum_bytes_billed=self.max_bytes, job_timeout_ms=30000, use_query_cache=True))
+                maximum_bytes_billed=self.max_bytes, job_timeout_ms=30000, use_query_cache=self.location.get("use_query_cache", True)))
             try:
                 return [dict(r.items()) for r in job.result(timeout=30, max_results=max_rows + 1)]
             except TimeoutError:

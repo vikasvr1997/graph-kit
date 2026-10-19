@@ -6,14 +6,14 @@ import time
 from dataclasses import asdict
 
 from .adapters import open_adapter
-from .adk import describe, is_read_only_graph_query, _WRITE
+from .adk import describe, is_read_only_graph_query, query_parts, _WRITE
 from .semantic import Catalog, load_index, retrieve, validate
 
 
 def check_query(query: str, mode: str):
     import re
-    body = re.sub(r'--[^\n]*|/\*.*?\*/', ' ', query, flags=re.S).strip().rstrip(';').strip()
-    if not body or ';' in body or _WRITE.search(body):
+    body, scrubbed = query_parts(query, graph_labels=mode == 'gql')
+    if not body or ';' in scrubbed or _WRITE.search(scrubbed):
         raise ValueError('Only a single read-only query is allowed.')
     if mode == 'gql':
         if not is_read_only_graph_query(body):
@@ -29,8 +29,8 @@ def validate_scope(query, mode, spec, tables, adapter):
     if mode == 'gql':
         ref = adapter.graph_ref(spec.name)
         prefix = re.match(r'^GRAPH\s+' + re.escape(ref) + r'\s+MATCH\b', query, re.I)
-        if not prefix or len(re.findall(r'\bGRAPH\b', query, re.I)) != 1 or re.search(
-                r'\b(FROM|JOIN|GRAPH_TABLE|NEXT|UNION)\b', query, re.I):
+        _, tail = query_parts(query[prefix.end():] if prefix else query, graph_labels=True)
+        if not prefix or re.search(r'\b(GRAPH|FROM|JOIN|GRAPH_TABLE|NEXT|UNION)\b', tail, re.I):
             raise ValueError('Agent GQL must be one MATCH query over the approved graph.')
         return
     import sqlglot
@@ -108,9 +108,14 @@ class DatasetAgent:
             '{"mode":"sql or gql","query":"...","references":["catalog item id",...],'
             '"interpretation":"brief description of what the query measures"}. '
             f'Backend: {self.spec.backend}; requested mode: {mode}; graph supported: {self.adapter.supports_graph}. '
+            f'For GQL, start with the exact prefix GRAPH {self.adapter.graph_ref(self.spec.name)} MATCH; '
+            'never omit the graph reference. '
             f'Limit returned rows to {max_rows}. Use SQL for direct aggregations; GQL for traversals '
-            'when available.\n' + json.dumps({'question': question, 'schema': schema,
-            'graph': graph, 'semantic_context': hits, 'verified_examples': self.examples}, default=str))
+            'when available. Each references entry must be copied exactly from allowed_reference_ids, '
+            'including its table:, column:, node: or edge: prefix. Cite at least the tables used.\n' + json.dumps({'question': question, 'schema': schema,
+            'graph': graph, 'semantic_context': hits,
+            'allowed_reference_ids': [x.id for x in self.catalog.items],
+            'verified_examples': self.examples}, default=str))
         planned = time.perf_counter()
         if plan.get('abstain'):
             return {'status': 'abstained', 'reason': plan['abstain']}

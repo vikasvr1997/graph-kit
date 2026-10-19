@@ -137,18 +137,24 @@ def publish(ws, adapter=None):
     elif spec.backend == 'bigquery':
         from google.cloud import bigquery
         ref = adapter.qualify(name)
-        for row in rows:
-            params = []
-            for col, value in zip(columns, row):
-                if col in ('aliases', 'embedding'):
-                    params.append(bigquery.ArrayQueryParameter(col, 'STRING' if col == 'aliases' else 'FLOAT64', value))
-                else:
-                    params.append(bigquery.ScalarQueryParameter(col, 'STRING', value))
+        # Bounded ARRAY<STRUCT> parameters avoid a separate billed job per object.
+        for offset in range(0, len(rows), 25):
+            records = []
+            for row in rows[offset:offset+25]:
+                params = []
+                for col, value in zip(columns, row):
+                    if col in ('aliases', 'embedding'):
+                        params.append(bigquery.ArrayQueryParameter(col, 'STRING' if col == 'aliases' else 'FLOAT64', value))
+                    else:
+                        params.append(bigquery.ScalarQueryParameter(col, 'STRING', value))
+                records.append(bigquery.StructQueryParameter(None, *params))
+            items = bigquery.ArrayQueryParameter('items', 'STRUCT', records)
             fields = ', '.join(columns)
-            values = ', '.join('@' + c for c in columns)
-            updates = ', '.join(f'{c} = @{c}' for c in columns[2:])
-            sql = (f'MERGE {ref} t USING (SELECT @catalog_hash AS h, @item_id AS i) s '
-                   f'ON t.catalog_hash=s.h AND t.item_id=s.i WHEN MATCHED THEN UPDATE SET {updates} '
+            values = ', '.join('s.' + c for c in columns)
+            updates = ', '.join(f'{c} = s.{c}' for c in columns[2:])
+            sql = (f'MERGE {ref} t USING UNNEST(@items) s '
+                   f'ON t.catalog_hash=s.catalog_hash AND t.item_id=s.item_id '
+                   f'WHEN MATCHED THEN UPDATE SET {updates} '
                    f'WHEN NOT MATCHED THEN INSERT ({fields}) VALUES ({values})')
-            adapter.client.query(sql, job_config=bigquery.QueryJobConfig(query_parameters=params)).result()
+            adapter.client.query(sql, job_config=bigquery.QueryJobConfig(query_parameters=[items])).result()
     return len(rows)

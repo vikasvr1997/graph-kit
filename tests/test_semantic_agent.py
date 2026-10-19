@@ -83,6 +83,8 @@ def test_agent_uses_executed_evidence_and_timings(reviewed):
     def ask(prompt):
         prompts.append(prompt)
         if len(prompts) == 1:
+            context = json.loads(prompt.split('\n', 1)[1])
+            assert 'table:suppliers' in context['allowed_reference_ids']
             return {'mode': 'sql', 'query': 'SELECT COUNT(*) AS n FROM "suppliers"',
                     'references': ['table:suppliers'], 'interpretation': 'Number of suppliers'}
         evidence = json.loads(prompt.split('\n', 1)[1])
@@ -229,9 +231,11 @@ def test_cloud_publish_typed_vectors(reviewed):
                 return NS(result=lambda: [])
             adapter = NS(backend='bigquery', qualify=lambda t: '`p.d.'+t+'`', client=NS(query=query))
             count = publish(ws, adapter)
-            assert len(calls) == count
+            assert len(calls) == (count + 24) // 25
             assert 'MERGE' in calls[0][0]
-            assert calls[0][1][-1].array_type == 'FLOAT64'
+            assert calls[0][1][0].array_type == 'STRUCT'
+            fields = calls[0][1][0].to_api_repr()['parameterType']['arrayType']['structTypes']
+            assert next(f for f in fields if f['name'] == 'embedding')['type']['arrayType']['type'] == 'FLOAT64'
         else:
             rows = []
             class Batch:
@@ -254,3 +258,38 @@ def test_agent_benchmark_tracks_failures():
     assert report['summary']['errors'] == 2
     assert report['summary']['abstained'] == 2
     assert report['summary']['p95_ms'] is not None
+
+
+def test_bigquery_serving_result_cache_can_be_disabled():
+    from graphkit.adapters.bigquery import BigQueryAdapter
+    configs = []
+    def query(sql, job_config):
+        configs.append(job_config)
+        return NS(statement_type='SELECT', result=lambda **kwargs: [])
+    adapter = BigQueryAdapter({'project':'p', 'dataset':'d', 'use_query_cache':False}, client=NS(query=query))
+    adapter.run_readonly('SELECT 1')
+    assert configs[-1].use_query_cache is False
+
+
+def test_graph_scope_requires_the_approved_graph():
+    spec = GraphSpec('G', 'bigquery', {'project':'p','dataset':'d'})
+    adapter = NS(graph_ref=lambda name: '`p.d.G`')
+    validate_scope('GRAPH `p.d.G` MATCH (n) RETURN COUNT(*) AS n', 'gql', spec, [], adapter)
+    for query in ['GRAPH MATCH (n) RETURN COUNT(*) AS n',
+                  'GRAPH `p.d.Other` MATCH (n) RETURN COUNT(*) AS n',
+                  'GRAPH `p.d.G` MATCH (n) RETURN n NEXT GRAPH `p.d.Other` MATCH (m) RETURN m']:
+        with pytest.raises(ValueError, match='approved graph'):
+            validate_scope(query, 'gql', spec, [], adapter)
+
+
+def test_readonly_guard_distinguishes_load_labels_and_write_commands():
+    from graphkit.adk import is_read_only_graph_query
+    query = 'GRAPH G MATCH (l:Load)-[:HAS_CUSTOMER]->(c:Customer) RETURN COUNT(*) AS n'
+    assert check_query(query, 'gql') == query
+    assert is_read_only_graph_query(query)
+    assert is_read_only_graph_query("GRAPH G MATCH (l:Load) RETURN 'LOAD; -- not a comment' AS text")
+    for bad in [query + '; DELETE FROM loads', 'GRAPH G MATCH (l:Load) DELETE l',
+                "GRAPH G MATCH (l:Load) RETURN l; LOAD DATA INTO x"]:
+        with pytest.raises(ValueError):
+            check_query(bad, 'gql')
+        assert not is_read_only_graph_query(bad)

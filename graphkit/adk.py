@@ -18,11 +18,30 @@ from .ddl import graph_name
 from .model import GraphSpec
 
 _WRITE = re.compile(r"\b(INSERT|UPDATE|DELETE|MERGE|CREATE|DROP|ALTER|TRUNCATE|GRANT|REVOKE|CALL|EXPORT|LOAD|EXECUTE)\b", re.I)
+_TOKENS = re.compile(
+    r"'(?:''|\\.|[^'])*'|\"(?:\"\"|\\.|[^\"])*\"|`(?:``|\\.|[^`])*`|--[^\n]*|/\*.*?\*/",
+    re.S,
+)
+
+
+def query_parts(query: str, *, graph_labels: bool = False) -> tuple[str, str]:
+    """Preserve executable text, but mask literals/identifiers for keyword checks.
+
+    GQL labels such as :Load name schema objects, not write operations. This is
+    a conservative precheck; adapters still enforce read-only execution.
+    """
+    body = _TOKENS.sub(lambda m: ' ' if m[0].startswith(('--', '/*')) else m[0], query).strip()
+    if body.endswith(';'):
+        body = body[:-1].rstrip()
+    scrubbed = _TOKENS.sub(' ', body)
+    if graph_labels:
+        scrubbed = re.sub(r':\s*[A-Za-z_][A-Za-z0-9_]*', ':label', scrubbed)
+    return body, scrubbed
 
 
 def is_read_only_graph_query(q: str) -> bool:
-    body = re.sub(r"--[^\n]*|/\*.*?\*/", " ", q, flags=re.S).strip().rstrip(";").strip()
-    if ";" in body or _WRITE.search(body):
+    body, scrubbed = query_parts(q, graph_labels=True)
+    if ";" in scrubbed or _WRITE.search(scrubbed):
         return False
     return bool(re.match(r"GRAPH\b", body, re.I) or (re.match(r"(SELECT|WITH)\b", body, re.I) and "GRAPH_TABLE" in body.upper()))
 

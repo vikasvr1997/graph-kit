@@ -136,7 +136,7 @@ Commit `approved.json` and `terraform/` to Git so graph changes go through revie
 
 ## Limits to know
 
-- **Not yet run against live BigQuery or Spanner.** The tests use fake clients and SQLite. The DDL and GQL follow Google's documented syntax, and the Terraform passes `terraform validate`, but expect to fix small things on the first real run. The benchmark is the quickest way to find them.
+- **Live cloud validation is workload-specific.** Graphs and semantic tables have been deployed through Terraform to BigQuery and Spanner using a copied freight dataset. See [the benchmark report](reports/cloud-benchmark-2026-10-19.md) for measured latency and correctness. Other schemas and workloads still need their own validation.
 - BigQuery bills at least 10 MB per query, so a scan of a dataset with many guessed links costs a few cents. Sampling uses `list_rows`, which is free.
 - Terraform can't delete a BigQuery job, so removing an edge from the graph means applying the smaller graph. To delete the whole graph, run `DROP PROPERTY GRAPH`.
 - A junction table with more than two links becomes a node, and the edges go from it. Change that in the editor if you prefer.
@@ -255,9 +255,9 @@ SQLite has a 10-second VM progress deadline.
 - The request path has two model calls (query generation and evidence explanation),
   without automatic repair loops. An explanation is model-generated; the returned
   query and rows provide auditable evidence, not a guarantee of correctness.
-- These changes have offline tests. Real cloud application, model access, answer
-  quality and p50/p95 latency require integration validation with your workloads.
-  No cloud resources are created by installing or running tests.
+- Offline tests and an opt-in live freight benchmark cover the implementation.
+  Validate answer quality and p50/p95 latency with your own workloads before
+  deployment. Installing the package or running pytest creates no cloud resources.
 
 Measure the complete agent path using a JSON array of representative questions:
 
@@ -269,3 +269,17 @@ graphkit agent-bench --name Operations --embedding-model YOUR_EMBEDDING_MODEL \
 This writes `agent_bench.json` with successful-response p50/p95/p99 latency,
 stage timings, abstentions and errors. It is a sequential baseline, not a
 concurrent-load test or an answer-correctness evaluation.
+
+
+### Live cloud benchmark
+
+The freight validation scripts in [scripts/README.md](scripts/README.md) prepare
+matching BigQuery and Spanner copies of an existing dataset and independently
+check complex agent answers. They are opt-in and create cloud resources only
+when explicitly run. Detailed timings stay in `graphkit_out/cloud_validation/`;
+aggregate findings are written to `reports/`.
+
+For fair measurements, set `use_query_cache: false` in a BigQuery graph's location
+before creating its approved semantic revision. Serving otherwise defaults to
+query caching. Metadata publishing batches up to 25 catalog objects per BigQuery
+MERGE job.
