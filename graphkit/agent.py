@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import math
 import time
 from dataclasses import asdict
 
@@ -68,7 +69,8 @@ class DatasetAgent:
 
     Inject ask(prompt)->dict and embed_question(text)->vector for other providers.
     """
-    def __init__(self, workspace, ask, embed_question, embedding_model, adapter=None):
+    def __init__(self, workspace, ask, embed_question, embedding_model, adapter=None,
+                 *, retrieve_context=None):
         self.spec = workspace.approved()
         if self.spec is None:
             raise ValueError('Approve the graph first.')
@@ -81,6 +83,8 @@ class DatasetAgent:
             raise ValueError('Question and catalog embedding models must match.')
         self.adapter = adapter or open_adapter(self.spec.backend, self.spec.location)
         self.ask, self.embed_question = ask, embed_question
+        # Optional remote retrieval must return exact objects from this approved catalog.
+        self.retrieve_context = retrieve_context
         self.tables = workspace.load_scan()
         ex = workspace.dir / 'examples.json'
         self.examples = json.loads(ex.read_text())[:6] if ex.exists() else []
@@ -89,7 +93,17 @@ class DatasetAgent:
         if mode not in ('auto', 'sql', 'gql') or not question.strip() or not 1 <= max_rows <= 1000 or top_k < 1:
             raise ValueError('Invalid question, mode or limits.')
         started = time.perf_counter()
-        hits = retrieve(self.catalog, self.index, self.embed_question(question), top_k)
+        hits = (self.retrieve_context(question, top_k) if self.retrieve_context else
+                retrieve(self.catalog, self.index, self.embed_question(question), top_k))
+        approved_items = {x.id: asdict(x) for x in self.catalog.items}
+        if not hits or len(hits) > top_k or any(
+            not isinstance(h, dict) or not isinstance(h.get('item'), dict)
+            or h['item'].get('id') not in approved_items
+            or h['item'] != approved_items[h['item']['id']]
+            or not isinstance(h.get('score'), (int, float)) or not math.isfinite(h['score'])
+            for h in hits
+        ):
+            raise ValueError('Retrieval must return scored objects from the approved catalog.')
         retrieved = time.perf_counter()
         # Expand entire selected tables so column retrieval never omits join keys.
         selected = {h['item']['table'] for h in hits}

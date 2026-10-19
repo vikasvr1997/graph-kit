@@ -244,10 +244,12 @@ SQLite has a 10-second VM progress deadline.
   database needs an `Adapter`, including `run_readonly`, supplied to the Python
   scan/agent workflows. This does not claim automatic support for every database.
 - Developers review semantic text in JSON; the existing browser UI edits the graph.
-- Retrieval currently uses an in-memory cosine search over the local approved
-  index. The cloud tables persist the same metadata/vectors, but server-side ANN
-  retrieval and vector indexes are not implemented. Keep local artifacts with the
-  serving deployment; scale retrieval independently when the catalog grows.
+- Retrieval defaults to an in-memory cosine search over the local approved
+  index. `BigQueryCatalogRetriever` optionally embeds questions through BigQuery
+  ML and performs native exact `VECTOR_SEARCH` over a versioned cloud catalog.
+  Server-side ANN/index deployment is not implemented. Keep approved local
+  artifacts with the serving deployment; scale retrieval independently when the
+  catalog grows. See [BQML evaluation](scripts/README.md#bigquery-ml-catalog-evaluation).
 - Retrieval expands selected tables and includes the full approved graph schema
   for join correctness. Large schemas will need bounded path expansion.
 - Graph/schema changes require semantic proposal and approval again, followed by
@@ -283,6 +285,11 @@ The [Customers_data hourly pipeline](pipelines/customers_to_spanner/README.md)
 uses native BigQuery exports, Cloud Workflows and Cloud Scheduler to upsert
 13 tables into a separate Spanner serving database. Terraform provisions its
 schema, service identities, scheduling and error monitoring.
+
+The [BigQuery ML catalog evaluation](reports/bqml-customers-benchmark-2026-10-19.md)
+generates schema embeddings directly in `Customers_data` and compares native
+BigQuery vector retrieval with local retrieval over the same vectors, including
+complete-answer correctness, latency and model-capacity failures.
 
 For fair measurements, set `use_query_cache: false` in a BigQuery graph's location
 before creating its approved semantic revision. Serving otherwise defaults to

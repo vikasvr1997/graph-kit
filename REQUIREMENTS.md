@@ -42,6 +42,8 @@ Cloud deployment and latency must be validated against real databases separately
 - Native BigQuery-to-Spanner batch replication, explicit keys/schema, a shared
   source snapshot, overlap protection and hourly scheduling. See
   `pipelines/customers_to_spanner/README.md` for deployment and operating limits.
+- BigQuery ML schema-embedding generation and native exact vector retrieval,
+  exposed through an optional approved-context retriever on DatasetAgent.
 
 ## Live validation
 - Isolated copies of Customers_data loaded into BigQuery and a free-trial Spanner instance.
@@ -50,9 +52,13 @@ Cloud deployment and latency must be validated against real databases separately
 - All 13 Customers_data tables replicated into `customers_serving`: 549,586 rows,
   with matching counts, column aggregates and ordered samples. The initial native
   export workflow completed in 149.26 seconds; hourly refresh is enabled.
+- BigQuery ML generated 167 schema-object embeddings (including all 139 columns)
+  in Customers_data. Of 42 agent requests over seven cases, 40 completed and
+  matched independent SQL; two failed with model-capacity 429 errors. See the
+  BQML report for native/local retrieval and full-agent timing comparisons.
 
 ## Remaining production work
 - Expand live BigQuery/Spanner validation beyond the freight benchmark; add workload quality and ambiguity evaluations.
-- Additional database adapters and native cloud vector retrieval/indexes.
+- Additional database adapters, Spanner vector retrieval and ANN/index deployment.
 - Semantic review in the browser (JSON review is implemented).
 - Concurrent serving/load tests, deployment-specific IAM and latency tuning.

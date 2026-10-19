@@ -59,6 +59,70 @@ def test_alias_retrieval_and_staleness(reviewed):
         load_index(catalog, ws.dir / 'embeddings.json')
 
 
+def test_remote_retrieval_cannot_inject_unapproved_metadata(reviewed):
+    from dataclasses import asdict
+    ws, adapter = reviewed
+    catalog = Catalog.load(ws.dir / 'semantic.approved.json')
+    hit = {'item': asdict(catalog.items[0]), 'score': .9}
+    def unexpected(*args):
+        raise AssertionError('Remote retrieval should not call local embedding or generation on invalid hits')
+    agent = DatasetAgent(ws, unexpected, unexpected, 'test-model', adapter,
+                         retrieve_context=lambda question, k: [hit])
+    hit['item']['description'] = 'unreviewed remote description'
+    with pytest.raises(ValueError, match='approved catalog'):
+        agent.answer('Count suppliers')
+    hit.pop('item')
+    with pytest.raises(ValueError, match='approved catalog'):
+        agent.answer('Count suppliers')
+
+
+def test_remote_retrieval_drives_agent_without_local_embedding(reviewed):
+    from dataclasses import asdict
+    ws, adapter = reviewed
+    catalog = Catalog.load(ws.dir / 'semantic.approved.json')
+    item = next(x for x in catalog.items if x.id == 'table:suppliers')
+    calls = []
+    sql = 'SELECT COUNT(*) AS n FROM "suppliers"'
+    def remote(question, k):
+        calls.append((question, k))
+        return [{'item': asdict(item), 'score': .9}]
+    def ask(prompt):
+        if prompt.startswith('Explain'):
+            return {'answer': 'Count from executed evidence'}
+        return {'mode': 'sql', 'query': sql, 'references': [item.id]}
+    def unexpected(question):
+        raise AssertionError('Local question embedding should not be called')
+    agent = DatasetAgent(ws, ask, unexpected, 'test-model', adapter, retrieve_context=remote)
+    answer = agent.answer('Count suppliers', mode='sql')
+    assert calls == [('Count suppliers', 8)]
+    assert answer['status'] == 'success'
+    assert answer['rows'] == adapter.run_readonly(sql).rows
+
+
+def test_bigquery_retriever_pins_catalog_version_and_parameterizes_question(reviewed):
+    from graphkit.bqml import BigQueryCatalogRetriever
+    ws, _ = reviewed
+    catalog = Catalog.load(ws.dir / 'semantic.approved.json')
+    rows = [{'item_id': catalog.items[0].id, 'catalog_hash': catalog.fingerprint(), 'distance': .2}]
+    class FakeClient:
+        def query(self, sql, job_config):
+            assert 'VECTOR_SEARCH' in sql and 'AI.GENERATE_EMBEDDING' in sql
+            assert "'RETRIEVAL_QUERY'" in sql and 'use_brute_force' in sql
+            assert 'malicious' not in sql
+            assert job_config.query_parameters[0].value == 'malicious question'
+            assert job_config.use_query_cache is False
+            class Job:
+                def result(self, timeout):return rows
+            return Job()
+    remote = BigQueryCatalogRetriever(FakeClient(), 'p.d.model', 'p.d.catalog', catalog)
+    assert remote('malicious question', 1)[0]['score'] == pytest.approx(.8)
+    rows[0]['catalog_hash'] = 'other-version'
+    with pytest.raises(ValueError, match='catalog version'):
+        remote('malicious question', 1)
+    with pytest.raises(ValueError, match='reference'):
+        BigQueryCatalogRetriever(FakeClient(), 'p.d.model;DROP', 'p.d.catalog', catalog)
+
+
 def test_graph_change_invalidates_catalog(reviewed):
     ws, adapter = reviewed
     spec = ws.approved()
