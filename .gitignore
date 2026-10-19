@@ -1,0 +1,11 @@
+__pycache__/
+*.egg-info/
+.venv/
+graphkit_out/
+demo/supply_chain.db
+.terraform/
+*.tfstate*
+
+.pytest_cache/
+.DS_Store
+graft/.cache/

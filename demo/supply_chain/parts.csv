@@ -1,0 +1,38 @@
+part_id,name,component,supplier_id,unit_cost
+P0001,brake caliper,BRAKES,S001,125.76
+P0002,brake caliper,BRAKES,S007,60.72
+P0003,brake pad set,BRAKES,S001,248.75
+P0004,brake pad set,BRAKES,S007,31.24
+P0005,ABS module,BRAKES,S001,205.49
+P0006,ABS module,BRAKES,S007,141.5
+P0007,brake line,BRAKES,S001,25.81
+P0008,brake line,BRAKES,S007,194.8
+P0009,driver airbag,AIRBAGS,S002,18.1
+P0010,driver airbag,AIRBAGS,S006,167.05
+P0011,curtain airbag,AIRBAGS,S002,30.27
+P0012,curtain airbag,AIRBAGS,S006,38.11
+P0013,airbag inflator,AIRBAGS,S002,163.62
+P0014,airbag inflator,AIRBAGS,S006,314.9
+P0015,wiring harness,ELECTRICAL,S003,50.55
+P0016,wiring harness,ELECTRICAL,S008,87.94
+P0017,body control module,ELECTRICAL,S003,239.91
+P0018,body control module,ELECTRICAL,S008,360.34
+P0019,battery sensor,ELECTRICAL,S003,220.99
+P0020,battery sensor,ELECTRICAL,S008,153.15
+P0021,fuse box,ELECTRICAL,S003,371.07
+P0022,fuse box,ELECTRICAL,S008,21.52
+P0023,steering rack,STEERING,S004,326.78
+P0024,steering rack,STEERING,S007,112.89
+P0025,tie rod,STEERING,S004,58.24
+P0026,tie rod,STEERING,S007,48.29
+P0027,power steering pump,STEERING,S004,119.99
+P0028,power steering pump,STEERING,S007,310.86
+P0029,fuel pump,FUEL SYSTEM,S005,71.95
+P0030,fuel injector,FUEL SYSTEM,S005,222.68
+P0031,fuel tank strap,FUEL SYSTEM,S005,244.23
+P0032,seat belt retractor,SEAT BELTS,S006,144.02
+P0033,seat belt retractor,SEAT BELTS,S002,209.95
+P0034,buckle assembly,SEAT BELTS,S006,27.61
+P0035,buckle assembly,SEAT BELTS,S002,26.41
+P0036,pretensioner,SEAT BELTS,S006,81.44
+P0037,pretensioner,SEAT BELTS,S002,259.83

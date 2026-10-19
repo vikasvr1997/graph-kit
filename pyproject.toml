@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "graphkit"
+version = "0.1.0"
+description = "Find relationships between tables and build BigQuery or Spanner property graphs, with a review UI, Terraform and benchmarks."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["sqlglot>=26"]
+
+[project.optional-dependencies]
+bigquery = ["google-cloud-bigquery>=3.25"]
+spanner = ["google-cloud-spanner>=3.40"]
+ui = ["streamlit>=1.40", "pandas"]
+llm = ["google-genai>=1.0"]
+notebook = ["bigquery-magics[spanner-graph-notebook]>=0.15", "spanner-graph-notebook>=1.1", "jupyter"]
+all = ["graphkit[bigquery,spanner,ui,llm]"]
+dev = ["graphkit[all]", "pytest"]
+
+[project.scripts]
+graphkit = "graphkit.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["graphkit*"]
+
+[tool.setuptools.package-data]
+"graphkit.ui" = ["vis-network.min.js"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

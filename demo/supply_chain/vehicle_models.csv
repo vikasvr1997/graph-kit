@@ -1,0 +1,11 @@
+model_id,name,model_year,body_type,plant_id
+M124,Atlas,2024,SUV,PL2
+M125,Atlas,2025,SUV,PL2
+M224,Comet,2024,sedan,PL3
+M225,Comet,2025,sedan,PL3
+M324,Granite,2024,truck,PL4
+M325,Granite,2025,truck,PL4
+M424,Harbor,2024,van,PL1
+M425,Harbor,2025,van,PL1
+M524,Ember,2024,SUV,PL2
+M525,Ember,2025,SUV,PL2

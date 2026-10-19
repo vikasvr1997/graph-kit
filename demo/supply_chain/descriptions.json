@@ -1,0 +1,63 @@
+{
+  "suppliers": {
+    "": "Companies that make parts. Made-up data.",
+    "supplier_id": "Unique supplier code",
+    "name": "Supplier company name",
+    "country": "Country of the supplier's main factory",
+    "tier": "1 = ships straight to our plants, 2 = ships to tier-1 suppliers"
+  },
+  "plants": {
+    "": "Vehicle assembly plants.",
+    "plant_id": "Unique plant code",
+    "name": "Plant name",
+    "country": "Country"
+  },
+  "parts": {
+    "": "Parts used to build vehicles.",
+    "part_id": "Unique part number",
+    "name": "Part name",
+    "component": "Component group, matches the recall component",
+    "supplier_id": "References suppliers: the company that makes this part",
+    "unit_cost": "Cost per part in USD"
+  },
+  "vehicle_models": {
+    "": "Vehicle models and model years.",
+    "model_id": "Unique model code",
+    "name": "Model name",
+    "model_year": "Model year",
+    "body_type": "SUV, sedan, truck or van",
+    "plant_id": "Plant that assembles this model"
+  },
+  "part_usage": {
+    "": "Which parts each vehicle model uses.",
+    "part_id": "The part",
+    "model_id": "The vehicle model that uses it",
+    "qty_per_vehicle": "How many of this part one vehicle needs"
+  },
+  "recalls": {
+    "": "Safety recall campaigns.",
+    "recall_id": "Recall campaign number",
+    "report_date": "Date the recall was filed",
+    "component": "Component group with the defect",
+    "severity": "LOW, MEDIUM or HIGH",
+    "summary": "What is wrong"
+  },
+  "recall_parts": {
+    "": "Parts named in each recall.",
+    "recall_id": "The recall",
+    "part_id": "A recalled part"
+  },
+  "recall_models": {
+    "": "Vehicle models covered by each recall.",
+    "recall_id": "The recall",
+    "model_id": "An affected vehicle model"
+  },
+  "shipments": {
+    "": "Part shipments from suppliers to plants.",
+    "shipment_id": "Unique shipment number",
+    "supplier_code": "Who shipped it",
+    "plant_id": "Plant that received it",
+    "ship_date": "Date shipped",
+    "units": "Number of parts in the shipment"
+  }
+}
