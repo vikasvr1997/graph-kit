@@ -18,11 +18,11 @@ from pathlib import Path
 from google.cloud import bigquery
 from google.api_core.exceptions import AlreadyExists
 
-from graphkit.agent import DatasetAgent
-from graphkit.bqml import BigQueryCatalogRetriever
-from graphkit.semantic import Catalog, embed
-from graphkit.spanner_retrieval import SpannerCatalogRetriever
-from graphkit.workflow import Workspace
+from graphkit.agents.dataset_agent import DatasetAgent
+from graphkit.semantic.bqml_retrieval import BigQueryCatalogRetriever
+from graphkit.semantic.catalog import Catalog, embed
+from graphkit.semantic.spanner_retrieval import SpannerCatalogRetriever
+from graphkit.core.workflow import Workspace
 from benchmark_cloud import compare, stats
 from cloud_questions import CASES
 from validate_cloud import PROJECT, MODEL, EMBEDDING, adapter, workspace

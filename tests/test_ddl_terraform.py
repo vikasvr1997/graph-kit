@@ -1,8 +1,8 @@
 import pytest
 
-from graphkit.ddl import create_graph_ddl
-from graphkit.model import Edge, GraphSpec, Node, diff
-from graphkit.terraform import write_terraform
+from graphkit.core.ddl import create_graph_ddl
+from graphkit.core.model import Edge, GraphSpec, Node, diff
+from graphkit.core.terraform import write_terraform
 
 
 def small(backend="bigquery"):

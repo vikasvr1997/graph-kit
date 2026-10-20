@@ -12,11 +12,11 @@ import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
 
-from graphkit import workflow
+from graphkit.core import workflow
 from graphkit.adapters import open_adapter
-from graphkit.ddl import create_graph_ddl
-from graphkit.model import APPROVED, NEW, PROPOSED, Edge, GraphSpec, Node
-from graphkit.terraform import terraform_available
+from graphkit.core.ddl import create_graph_ddl
+from graphkit.core.model import APPROVED, NEW, PROPOSED, Edge, GraphSpec, Node
+from graphkit.core.terraform import terraform_available
 from graphkit.ui.graph_view import colors, data_view, render, schema_view
 
 st.set_page_config(page_title="Graph kit", page_icon="🕸️", layout="wide")

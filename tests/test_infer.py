@@ -1,8 +1,8 @@
 import sqlite3
 
-from graphkit import workflow
+from graphkit.core import workflow
 from graphkit.adapters import open_adapter, scan
-from graphkit.infer import infer, node_label, singular
+from graphkit.core.infer import infer, node_label, singular
 
 
 def edges_by_label(spec):

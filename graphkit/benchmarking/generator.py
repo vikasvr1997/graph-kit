@@ -8,8 +8,8 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 
-from .adapters.base import Adapter
-from .model import Edge, GraphSpec
+from ..adapters.base import Adapter
+from ..core.model import Edge, GraphSpec
 
 
 @dataclass

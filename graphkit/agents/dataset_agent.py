@@ -6,9 +6,9 @@ import math
 import time
 from dataclasses import asdict
 
-from .adapters import open_adapter
-from .adk import describe, is_read_only_graph_query, query_parts, _WRITE
-from .semantic import Catalog, load_index, retrieve, validate
+from ..adapters import open_adapter
+from .tools import describe, is_read_only_graph_query, query_parts, _WRITE
+from ..semantic.catalog import Catalog, load_index, retrieve, validate
 
 
 def check_query(query: str, mode: str):

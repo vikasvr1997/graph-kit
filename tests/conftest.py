@@ -1,8 +1,8 @@
 import pytest
 
 from graphkit.adapters import open_adapter, scan
-from graphkit.demo import make
-from graphkit.infer import infer
+from graphkit.core.demo import make
+from graphkit.core.infer import infer
 
 
 @pytest.fixture

@@ -4,12 +4,12 @@ from types import SimpleNamespace as NS
 
 import pytest
 
-from graphkit.agent import DatasetAgent, check_query, validate_scope
-from graphkit.model import GraphSpec
-from graphkit.semantic import Catalog, embed, load_index, propose, retrieve
-from graphkit.semantic_workflow import (approve_catalog, embed_catalog, propose_catalog,
+from graphkit.agents.dataset_agent import DatasetAgent, check_query, validate_scope
+from graphkit.core.model import GraphSpec
+from graphkit.semantic.catalog import Catalog, embed, load_index, propose, retrieve
+from graphkit.semantic.workflow import (approve_catalog, embed_catalog, propose_catalog,
                                        publish, semantic_ddl, table_name)
-from graphkit.workflow import Workspace, confirm
+from graphkit.core.workflow import Workspace, confirm
 
 
 @pytest.fixture
@@ -119,7 +119,7 @@ def test_no_embedding_mode_needs_no_vectors_and_passes_full_catalog(reviewed):
 
 
 def test_spanner_retriever_uses_typed_vectors_and_catalog_filter(reviewed):
-    from graphkit.spanner_retrieval import SpannerCatalogRetriever
+    from graphkit.semantic.spanner_retrieval import SpannerCatalogRetriever
     ws, _ = reviewed
     catalog = Catalog.load(ws.dir / 'semantic.approved.json')
     class Snapshot:
@@ -142,7 +142,7 @@ def test_spanner_retriever_uses_typed_vectors_and_catalog_filter(reviewed):
 
 
 def test_bigquery_retriever_pins_catalog_version_and_parameterizes_question(reviewed):
-    from graphkit.bqml import BigQueryCatalogRetriever
+    from graphkit.semantic.bqml_retrieval import BigQueryCatalogRetriever
     ws, _ = reviewed
     catalog = Catalog.load(ws.dir / 'semantic.approved.json')
     rows = [{'item_id': catalog.items[0].id, 'catalog_hash': catalog.fingerprint(), 'distance': .2}]
@@ -319,7 +319,7 @@ def test_spanner_readonly_snapshot_and_cap():
 
 
 def test_cloud_publish_typed_vectors(reviewed):
-    from graphkit.semantic_workflow import publish
+    from graphkit.semantic.workflow import publish
     ws, _ = reviewed
     spec = ws.approved()
     for backend in ['bigquery', 'spanner']:
@@ -353,7 +353,7 @@ def test_cloud_publish_typed_vectors(reviewed):
 
 
 def test_agent_benchmark_tracks_failures():
-    from graphkit.bench import benchmark_agent
+    from graphkit.benchmarking.runner import benchmark_agent
     class Agent:
         def answer(self, q):
             if q == 'fail': raise ValueError('bad query')

@@ -15,11 +15,11 @@ from google.cloud import bigquery
 from google.api_core.exceptions import NotFound
 
 from graphkit.adapters.bigquery import BigQueryAdapter
-from graphkit.agent import DatasetAgent
-from graphkit.bqml import BigQueryCatalogRetriever
-from graphkit.model import GraphSpec
-from graphkit.semantic import Catalog, embed, propose, retrieve
-from graphkit.workflow import Workspace, confirm
+from graphkit.agents.dataset_agent import DatasetAgent
+from graphkit.semantic.bqml_retrieval import BigQueryCatalogRetriever
+from graphkit.core.model import GraphSpec
+from graphkit.semantic.catalog import Catalog, embed, propose, retrieve
+from graphkit.core.workflow import Workspace, confirm
 from benchmark_cloud import compare, stats
 from cloud_questions import CASES
 from validate_cloud import MODEL

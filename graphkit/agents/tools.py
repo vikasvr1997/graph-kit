@@ -13,9 +13,9 @@ import json
 import re
 from pathlib import Path
 
-from .adapters import Adapter, open_adapter
-from .ddl import graph_name
-from .model import GraphSpec
+from ..adapters import Adapter, open_adapter
+from ..core.ddl import graph_name
+from ..core.model import GraphSpec
 
 _WRITE = re.compile(r"\b(INSERT|UPDATE|DELETE|MERGE|CREATE|DROP|ALTER|TRUNCATE|GRANT|REVOKE|CALL|EXPORT|LOAD|EXECUTE)\b", re.I)
 _TOKENS = re.compile(
@@ -113,7 +113,7 @@ def dataset_tools(workspace, *, ask, embed_question, embedding_model, adapter=No
     Reuses the inner DatasetAgent; the embedding/model providers are injected so
     the outer agent and query generator can be configured independently.
     """
-    from .agent import DatasetAgent
+    from .dataset_agent import DatasetAgent
     dataset = DatasetAgent(workspace, ask, embed_question, embedding_model, adapter)
 
     def answer_dataset_question(question: str) -> dict:

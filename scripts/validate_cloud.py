@@ -7,10 +7,10 @@ from pathlib import Path
 from google import genai
 from google.genai import types
 from graphkit.adapters import open_adapter
-from graphkit.workflow import Workspace, do_scan, confirm, apply
-from graphkit.semantic import Catalog
-from graphkit.semantic_workflow import propose_catalog, approve_catalog, embed_catalog, publish
-from graphkit.llm import _ask
+from graphkit.core.workflow import Workspace, do_scan, confirm, apply
+from graphkit.semantic.catalog import Catalog
+from graphkit.semantic.workflow import propose_catalog, approve_catalog, embed_catalog, publish
+from graphkit.agents.llm import _ask
 
 PROJECT='premium-odyssey-508202-k9'
 ROOT=Path('graphkit_out/cloud_validation')
@@ -89,8 +89,8 @@ def main():
     elif a.phase=='publish':
         print('Published',publish(ws,source),'semantic records',flush=True)
     else:
-        from graphkit.semantic import load_index
-        from graphkit.semantic_workflow import current, table_name
+        from graphkit.semantic.catalog import load_index
+        from graphkit.semantic.workflow import current, table_name
         spec,catalog=current(ws)
         index=load_index(catalog,ws.dir/'embeddings.json')
         query=(f'SELECT COUNT(*) AS n, COUNT(DISTINCT item_id) AS unique_ids, '

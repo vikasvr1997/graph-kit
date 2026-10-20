@@ -1,6 +1,6 @@
 import json
 
-from graphkit import bench, queries
+from graphkit.benchmarking import generator as queries, runner as bench
 from graphkit.adapters.base import QueryResult
 from graphkit.adapters.sqlite import SqliteAdapter
 

@@ -11,7 +11,7 @@ import json
 from pathlib import Path
 
 from ..adapters.base import TableInfo
-from ..model import NEW, PROPOSED, GraphSpec
+from ..core.model import NEW, PROPOSED, GraphSpec
 
 VIS_JS = Path(__file__).with_name("vis-network.min.js")
 PALETTE = ["#1a73e8", "#e8710a", "#188038", "#9334e6", "#d01884", "#12b5cb", "#c5221f", "#5f6368", "#f9ab00", "#3c4043"]

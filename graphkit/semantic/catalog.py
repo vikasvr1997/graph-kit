@@ -7,8 +7,8 @@ import math
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
-from .model import GraphSpec
-from .adapters.base import TableInfo
+from ..core.model import GraphSpec
+from ..adapters.base import TableInfo
 
 
 def digest(value) -> str:

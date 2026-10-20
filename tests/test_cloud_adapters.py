@@ -12,7 +12,7 @@ from google.cloud.bigquery.table import ColumnReference, ForeignKey, PrimaryKey,
 from graphkit.adapters.base import scan
 from graphkit.adapters.bigquery import BigQueryAdapter
 from graphkit.adapters.spanner import SpannerAdapter
-from graphkit.infer import infer
+from graphkit.core.infer import infer
 
 
 class Row(dict):
