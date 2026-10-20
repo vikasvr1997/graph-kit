@@ -8,7 +8,7 @@ interface Props {
   onNew: () => void
   onRename: (id: string, title: string) => void
   onDelete: (id: string) => void
-  onBack: () => void
+  onBack?: () => void
 }
 
 export function HistoryRail({ sessions, activeId, onSelect, onNew, onRename, onDelete, onBack }: Props) {
@@ -17,7 +17,7 @@ export function HistoryRail({ sessions, activeId, onSelect, onNew, onRename, onD
 
   return (
     <aside className="scrollbar-thin flex h-full w-64 shrink-0 flex-col gap-3 overflow-y-auto border-r border-border p-4">
-      <button onClick={onBack} className="self-start text-xs text-muted hover:text-text">&larr; Back to GraphKit</button>
+      {onBack && <button onClick={onBack} className="self-start text-xs text-muted hover:text-text">&larr; Back to GraphKit</button>}
       <button onClick={onNew}
         className="rounded-lg bg-accent px-3 py-2 text-sm font-medium text-white hover:brightness-110">
         New chat

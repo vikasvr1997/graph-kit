@@ -118,13 +118,14 @@ def main(argv=None) -> int:
         import os
         import uvicorn
         os.environ["GRAPHKIT_HOME"] = a.root
-        uvicorn.run("graphkit.api.server:app", host="127.0.0.1", port=a.port)
+        uvicorn.run("graphkit.api.application:app", host="127.0.0.1", port=a.port)
         return 0
 
     if a.cmd == "chat-eval":
         import asyncio
         import functools
         from .chat.eval import run_eval, summary as eval_summary
+        from .benchmarking.chat_integration import GRAPH_CASES
         from .agents.chat_agent import get_runner
         from .agents.llm import MODEL, _ask
         from .semantic.workflow import GeminiEmbeddings
@@ -132,7 +133,7 @@ def main(argv=None) -> int:
         ask = functools.partial(_ask, model=a.generation_model or MODEL)
         embed_question = GeminiEmbeddings(a.embedding_model).question
         runner = get_runner(ws, ask, embed_question, a.embedding_model, a.generation_model or MODEL)
-        runs = asyncio.run(run_eval(runner))
+        runs = asyncio.run(run_eval(runner, cases=GRAPH_CASES))
         for r in runs:
             mark = "OK  " if r.tool_ok and r.guardrail_ok and r.status != "error" else "FAIL"
             print(f"{mark} tool={r.tool_called!s:<14} blocked={r.blocked!s:<5} {r.elapsed_ms:>8.1f} ms  {r.question}")

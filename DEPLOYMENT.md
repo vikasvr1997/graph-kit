@@ -1,6 +1,11 @@
 # Cloud Run deployment
 
 The React UI and FastAPI API run in one container and one Cloud Run service.
+Chat is disabled by default (`CHAT_ENABLED=false`); graph creation remains enabled.
+Set `CHAT_ENABLED=true` and restart to restore the assistant.
+The configurable entrypoint is `graphkit.api.application:app`. Set
+`GRAPHKIT_ENABLED=false` and `CHAT_ENABLED=true` to run only the assistant; see [CHAT.md](CHAT.md) for
+the separate chat-only Dockerfile, evaluations and guardrails.
 FastAPI serves `graphkit-web/dist` at `/` and the API at `/api/*`.
 Local Vite development proxies `/api` to port 8765. Set `VITE_API_BASE_URL`
 at frontend build time only when using a separate backend.

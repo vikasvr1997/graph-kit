@@ -9,4 +9,4 @@ RUN pip install '.[api,bigquery,spanner,llm,chat]'
 COPY graphkit-web/dist ./graphkit-web/dist
 RUN python -m graphkit.cli demo
 EXPOSE 8080
-CMD ["sh", "-c", "exec uvicorn graphkit.api.server:app --host 0.0.0.0 --port ${PORT:-8080}"]
+CMD ["sh", "-c", "exec uvicorn graphkit.api.application:app --host 0.0.0.0 --port ${PORT:-8080}"]

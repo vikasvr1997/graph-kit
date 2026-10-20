@@ -24,6 +24,7 @@ dev = ["graphkit[all]", "pytest"]
 
 [project.scripts]
 graphkit = "graphkit.cli:main"
+graphkit-chat = "graphkit.chat.__main__:main"
 
 [tool.setuptools.packages.find]
 include = ["graphkit*"]

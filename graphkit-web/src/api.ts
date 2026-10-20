@@ -25,6 +25,7 @@ const qs = (params: Record<string, string | number | undefined>) =>
   ).toString()
 
 export const api = {
+  capabilities: () => req<{ graphkit: boolean; chat: boolean }>('/api/capabilities'),
   listGraphs: () => req<string[]>('/api/graphs'),
   createDemo: (path: string) => req<{ path: string }>('/api/demo', { method: 'POST', body: JSON.stringify({ path }) }),
 

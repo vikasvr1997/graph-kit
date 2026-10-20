@@ -1,5 +1,5 @@
 """Chat endpoints: session CRUD (Firestore) + a streaming (SSE) message endpoint
-driving the ADK-based chat agent (graphkit/chatbot.py). Everything here requires
+driving the standalone ADK chat agent, with optional GraphKit tools. Everything here requires
 a signed-in user (`require_user`).
 """
 from __future__ import annotations
@@ -15,27 +15,34 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from ..chat import store as chat_store
-from ..core import workflow
-from ..agents.chat_agent import get_runner, run_turn
-from ..agents.llm import MODEL as DEFAULT_GENERATION_MODEL
-from ..semantic.workflow import GeminiEmbeddings
+from ..chat.agent import get_runner, run_turn
+from ..config import graphkit_enabled
 from .auth import require_user
 from .model_catalog import DEFAULTS
+
+DEFAULT_GENERATION_MODEL = os.getenv("CHAT_MODEL", DEFAULTS["generation_model"])
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/chat")
 
 
-def ws(name: str) -> workflow.Workspace:
+def ws(name: str):
+    from ..core import workflow
     root = Path(os.getenv("GRAPHKIT_HOME", "graphkit_out"))
     return workflow.Workspace(root, name)
+
+
+def GeminiEmbeddings(model):
+    """Load the optional embedding integration only for graph-enabled chat."""
+    from ..semantic.workflow import GeminiEmbeddings as Embeddings
+    return Embeddings(model)
 
 
 # ---------------- sessions ----------------
 
 class CreateSessionBody(BaseModel):
-    workspace: str
+    workspace: str = "chat"
     generation_model: str = DEFAULT_GENERATION_MODEL
     embedding_model: str = DEFAULTS["embedding_model"]
 
@@ -100,20 +107,20 @@ def send_message(session_id: str, body: SendMessageBody, uid: str = Depends(requ
     chat_store.append_message(uid, session_id, "user", text=body.text, attachments=attachment_meta)
 
     async def stream():
-        from ..agents.llm import _ask
-        ask = functools.partial(_ask, model=generation_model)
-        try:
-            embed_question = GeminiEmbeddings(embedding_model).question
-        except Exception as e:  # noqa: BLE001 - e.g. missing Vertex AI credentials
-            yield _sse("error", {"cause": str(e), "recovery": "Check Vertex AI access and retry."})
-            return
         # The ADK runner/session-service is reused across turns of this session_id,
         # so the agent keeps real multi-turn tool-calling memory for the life of
-        # this server process (see graphkit/chatbot.py's module docstring).
-        runner = get_runner(ws(session["workspace"]), ask, embed_question, embedding_model, generation_model)
+        # this server process (see graphkit.chat.agent).
         attachments = [a.model_dump() for a in body.attachments]
         final: dict | None = None
         try:
+            if graphkit_enabled():
+                from ..agents.llm import _ask
+                ask = functools.partial(_ask, model=generation_model)
+                embed_question = GeminiEmbeddings(embedding_model).question
+                runner = get_runner(ws(session["workspace"]), ask, embed_question,
+                                    embedding_model, generation_model)
+            else:
+                runner = get_runner(generation_model=generation_model, graph_enabled=False)
             async for kind, payload in run_turn(runner, session_id, body.text, attachments):
                 if kind == "status":
                     yield _sse("status", {"text": payload})

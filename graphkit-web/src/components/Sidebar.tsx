@@ -11,7 +11,7 @@ interface Props {
   onScanned: (msg: string) => void
   onError: (msg: string) => void
   user: User | null
-  onOpenChat: () => void
+  onOpenChat?: () => void
 }
 
 const SOURCES: { label: string; backend: Backend }[] = [
@@ -174,14 +174,14 @@ export function Sidebar({ name, onNameChange, hasApproved, onScanned, onError, u
         </button>
       )}
 
-      <button
+      {onOpenChat && <button
         onClick={onOpenChat}
         className="rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-sm font-medium text-text transition hover:bg-accent/20"
       >
         Open Assistant
-      </button>
+      </button>}
 
-      <SettingsButton user={user} />
+      <SettingsButton user={user} authEnabled={!!onOpenChat} />
     </aside>
   )
 }

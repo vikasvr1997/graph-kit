@@ -1,6 +1,5 @@
 import type { User } from 'firebase/auth'
 import { useEffect, useRef, useState } from 'react'
-import { signInWithGoogle, signOutUser } from '../firebase'
 import { applyTheme, getStoredTheme, type ThemeChoice } from '../theme'
 
 const THEMES: { value: ThemeChoice; label: string }[] = [
@@ -9,7 +8,7 @@ const THEMES: { value: ThemeChoice; label: string }[] = [
   { value: 'system', label: 'System' },
 ]
 
-export function SettingsButton({ user }: { user: User | null }) {
+export function SettingsButton({ user, authEnabled = true }: { user: User | null; authEnabled?: boolean }) {
   const [open, setOpen] = useState(false)
   const [theme, setTheme] = useState<ThemeChoice>(getStoredTheme())
   const [busy, setBusy] = useState(false)
@@ -36,11 +35,11 @@ export function SettingsButton({ user }: { user: User | null }) {
 
   const signIn = async () => {
     setBusy(true)
-    try { await signInWithGoogle() } finally { setBusy(false) }
+    try { await (await import('../firebase')).signInWithGoogle() } finally { setBusy(false) }
   }
   const signOutNow = async () => {
     setBusy(true)
-    try { await signOutUser() } finally { setBusy(false) }
+    try { await (await import('../firebase')).signOutUser() } finally { setBusy(false) }
   }
 
   return (
@@ -67,7 +66,7 @@ export function SettingsButton({ user }: { user: User | null }) {
             ))}
           </div>
 
-          <p className="mb-2 text-xs font-medium text-muted">Account</p>
+          {authEnabled && <><p className="mb-2 text-xs font-medium text-muted">Account</p>
           {user ? (
             <div className="flex items-center justify-between gap-2">
               <span className="truncate text-sm text-text">{user.email}</span>
@@ -81,7 +80,7 @@ export function SettingsButton({ user }: { user: User | null }) {
               className="w-full rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-white hover:brightness-110 disabled:opacity-50">
               {busy ? 'Signing in...' : 'Sign in with Google'}
             </button>
-          )}
+          )}</>}
         </div>
       )}
     </div>

@@ -26,7 +26,7 @@ from ..core.model import APPROVED, GraphSpec, Node, Edge
 from ..semantic.catalog import Catalog, SemanticItem
 from ..core.terraform import terraform_available
 from ..ui.graph_view import colors as graph_colors, data_view, schema_view
-from .chat import router as chat_router
+from ..config import chat_enabled
 from .model_catalog import DEFAULTS, EMBEDDING_MODELS, GENERATION_MODELS, NOTE
 
 ROOT = Path(os.getenv("GRAPHKIT_HOME", "graphkit_out"))
@@ -38,7 +38,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.include_router(chat_router)
+CHAT_ENABLED = chat_enabled()
+if CHAT_ENABLED:
+    from .chat import router as chat_router
+    app.include_router(chat_router)
+
+
+@app.get("/api/capabilities")
+def capabilities() -> dict:
+    return {"graphkit": True, "chat": CHAT_ENABLED}
 
 
 def ws(name: str) -> workflow.Workspace:

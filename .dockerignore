@@ -1,5 +1,6 @@
 **
 !Dockerfile
+!Dockerfile.chat
 !pyproject.toml
 !README.md
 !LICENSE

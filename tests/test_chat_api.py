@@ -1,9 +1,12 @@
 import pytest
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from graphkit.api import chat as chat_module
-from graphkit.api import server
 from graphkit.api.auth import require_user
+
+app = FastAPI()
+app.include_router(chat_module.router)
 
 
 class FakeStore:
@@ -63,9 +66,9 @@ def store(monkeypatch):
 
 @pytest.fixture
 def client(store):
-    server.app.dependency_overrides[require_user] = lambda: "test-uid"
-    yield TestClient(server.app)
-    server.app.dependency_overrides.pop(require_user, None)
+    app.dependency_overrides[require_user] = lambda: "test-uid"
+    yield TestClient(app)
+    app.dependency_overrides.pop(require_user, None)
 
 
 def _sse_events(response):
@@ -80,7 +83,7 @@ def _sse_events(response):
 
 
 def test_sessions_require_auth():
-    client = TestClient(server.app)
+    client = TestClient(app)
     r = client.get("/api/chat/sessions")
     assert r.status_code == 401
 

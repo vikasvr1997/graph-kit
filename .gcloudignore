@@ -1,5 +1,6 @@
 **
 !Dockerfile
+!Dockerfile.chat
 !.dockerignore
 !pyproject.toml
 !README.md

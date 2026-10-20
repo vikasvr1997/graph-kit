@@ -17,10 +17,11 @@ const SUGGESTIONS = [
 interface Props {
   workspace: string
   user: User | null
-  onBack: () => void
+  onBack?: () => void
+  graphEnabled?: boolean
 }
 
-export function ChatView({ workspace, user, onBack }: Props) {
+export function ChatView({ workspace, user, onBack, graphEnabled = true }: Props) {
   const [models, setModels] = useState<ModelsResponse | null>(null)
   const [generationModel, setGenerationModel] = useState('')
   const [embeddingModel, setEmbeddingModel] = useState('')
@@ -156,10 +157,11 @@ export function ChatView({ workspace, user, onBack }: Props) {
     return (
       <div className="flex h-screen flex-col items-center justify-center gap-4">
         <p className="text-sm text-muted">Sign in to use the assistant.</p>
-        <button onClick={() => signInWithGoogle()} className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:brightness-110">
+        <button onClick={() => { void signInWithGoogle().catch((e: Error) => setError({ cause: e.message, recovery: 'Check the Firebase authorized domain and allow the sign-in popup.' })) }} className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:brightness-110">
           Sign in with Google
         </button>
-        <button onClick={onBack} className="text-xs text-muted hover:text-text">&larr; Back to GraphKit</button>
+        {error && <p role="alert" className="text-sm text-red">{error.cause}</p>}
+        {onBack && <button onClick={onBack} className="text-xs text-muted hover:text-text">&larr; Back to GraphKit</button>}
       </div>
     )
   }
@@ -184,7 +186,7 @@ export function ChatView({ workspace, user, onBack }: Props) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex items-center justify-between border-b border-border px-5 py-3">
-          <p className="text-sm text-muted">Workspace: <span className="text-text">{workspace}</span></p>
+          <p className="text-sm text-muted">{graphEnabled ? 'Workspace: ' : 'Assistant'}<span className="text-text">{graphEnabled ? workspace : ''}</span></p>
           {models && (
             <select value={generationModel} onChange={(e) => setGenerationModel(e.target.value)}
               className="rounded-md border border-border bg-ink/40 px-2 py-1 text-xs text-text">
@@ -196,9 +198,11 @@ export function ChatView({ workspace, user, onBack }: Props) {
         <div ref={scrollRef} onScroll={onScroll} className="scrollbar-thin flex-1 overflow-y-auto px-5 py-6">
           {messages.length === 0 && !streamingText && (
             <div className="w-full py-16 text-center">
-              <h2 className="text-lg font-semibold text-text">Ask anything about this dataset</h2>
+              <h2 className="text-lg font-semibold text-text">{graphEnabled ? 'Ask anything about this dataset' : 'How can I help?'}</h2>
               <p className="mt-2 text-sm text-muted">
-                Grounded in the approved graph, semantic catalog and embeddings for <strong>{workspace}</strong>.
+                {graphEnabled
+                  ? <>Grounded in the approved graph, semantic catalog and embeddings for <strong>{workspace}</strong>.</>
+                  : 'Chat with the assistant or attach a file.'}
                 AI replies can be wrong - check citations and generated queries before relying on them.
               </p>
             </div>
@@ -246,7 +250,9 @@ export function ChatView({ workspace, user, onBack }: Props) {
 
         <Composer
           busy={busy} onSend={send} onStop={stop}
-          suggestions={messages.length === 0 ? SUGGESTIONS : []}
+          suggestions={messages.length === 0
+            ? (graphEnabled ? SUGGESTIONS : ['Help me draft an email', 'Explain a topic step by step', 'Summarize an attached document'])
+            : []}
           prefill={prefill} onPrefillConsumed={() => setPrefill(undefined)}
         />
       </div>

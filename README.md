@@ -305,6 +305,13 @@ For fair measurements, set `use_query_cache: false` in a BigQuery graph's locati
 before creating its approved semantic revision. Serving otherwise defaults to
 query caching. Metadata publishing batches up to 25 catalog objects per BigQuery
 MERGE job.
-# License
+
+## Independent chat mode
+
+Graph creation is the default; chat is disabled unless `CHAT_ENABLED=true`.
+The conversational assistant can run without GraphKit workflows, graph tools,
+semantic embeddings or Streamlit. See [chat-only setup and evaluations](CHAT.md).
+
+## License
 
 This project is licensed under the [MIT License](LICENSE).
