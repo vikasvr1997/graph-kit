@@ -1,0 +1,12 @@
+**
+!Dockerfile
+!pyproject.toml
+!README.md
+!LICENSE
+!graphkit/
+!graphkit/**
+!graphkit-web/
+!graphkit-web/dist/
+!graphkit-web/dist/**
+**/__pycache__/
+**/*.pyc

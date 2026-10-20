@@ -15,6 +15,7 @@ from typing import Any
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from ..core import workflow
@@ -393,3 +394,14 @@ def semantic_ask(body: SemanticAskBody) -> dict:
         agent = DatasetAgent(ws(body.name), ask_fn, embedder.question, body.embedding_model)
         return agent.answer(body.question, mode=body.mode)
     return run(_run)
+
+
+@app.get("/healthz")
+def healthz() -> dict:
+    return {"status": "ok"}
+
+
+# Mount last so API routes retain priority over frontend files.
+FRONTEND = Path(os.getenv("GRAPHKIT_FRONTEND", "graphkit-web/dist"))
+if FRONTEND.is_dir():
+    app.mount("/", StaticFiles(directory=FRONTEND, html=True), name="frontend")
