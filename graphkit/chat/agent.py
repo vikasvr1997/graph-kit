@@ -13,7 +13,7 @@ from google.adk.models.llm_response import LlmResponse
 from google.adk.runners import InMemoryRunner
 from google.genai import types
 
-from . import guardrails as model_armor
+from graphkit.chat import guardrails as model_armor
 
 CHAT_INSTRUCTION = (
     "You are a helpful conversational assistant. Answer questions and discuss attached files. "
@@ -64,7 +64,8 @@ def build_agent(workspace=None, ask=None, embed_question=None, embedding_model=N
     if graph_enabled:
         if workspace is None or ask is None or embed_question is None or not embedding_model:
             raise ValueError("GraphKit chat tools require a workspace, query model and embeddings.")
-        from ..agents.chat_tools import INSTRUCTION, build_tools
+        from graphkit.graph.agents.chat_tools import INSTRUCTION
+        from graphkit.graph.agents.chat_tools import build_tools
         instruction = INSTRUCTION
         tools = build_tools(workspace, ask, embed_question, embedding_model)
     guard_prompt, guard_response = _make_guards(os.environ["GOOGLE_CLOUD_PROJECT"])

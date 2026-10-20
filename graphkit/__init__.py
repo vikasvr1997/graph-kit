@@ -5,6 +5,6 @@ __all__ = ["Edge", "GraphSpec", "Node", "__version__"]
 
 def __getattr__(name):
     if name in {"Edge", "GraphSpec", "Node"}:
-        from .core import model
+        from graphkit.graph.core import model
         return getattr(model, name)
     raise AttributeError(name)

@@ -6,21 +6,23 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from ..config import chat_enabled, graphkit_enabled
+from graphkit.shared.config import chat_enabled
+from graphkit.shared.config import graphkit_enabled
 
 
 def create_app() -> FastAPI:
     enabled = graphkit_enabled()
     if enabled:
-        from .server import app
+        from graphkit.graph.api import app
         return app
 
     if not chat_enabled():
         raise ValueError("Enable GRAPHKIT_ENABLED or CHAT_ENABLED; both are disabled.")
 
     # No graph workflows, adapters, semantic embeddings or graph benchmarks imported.
-    from .chat import router
-    from .model_catalog import DEFAULTS, GENERATION_MODELS
+    from graphkit.chat.api import router
+    from graphkit.shared.models import DEFAULTS
+    from graphkit.shared.models import GENERATION_MODELS
 
     app = FastAPI(title="Chat assistant")
     app.add_middleware(

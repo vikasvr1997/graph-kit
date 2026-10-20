@@ -2,9 +2,10 @@ FROM python:3.12-slim
 WORKDIR /app
 ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 GRAPHKIT_ENABLED=false CHAT_ENABLED=true
 COPY pyproject.toml README.md LICENSE ./
-COPY graphkit/__init__.py graphkit/config.py ./graphkit/
+COPY graphkit/__init__.py ./graphkit/
 COPY graphkit/chat ./graphkit/chat
-COPY graphkit/api/__init__.py graphkit/api/application.py graphkit/api/chat.py graphkit/api/auth.py graphkit/api/model_catalog.py ./graphkit/api/
+COPY graphkit/shared ./graphkit/shared
+COPY graphkit/api ./graphkit/api
 RUN pip install '.[api,chat]'
 COPY graphkit-web/dist ./graphkit-web/dist
 EXPOSE 8080

@@ -23,14 +23,14 @@ all = ["graphkit[bigquery,spanner,ui,api,llm,chat]"]
 dev = ["graphkit[all]", "pytest"]
 
 [project.scripts]
-graphkit = "graphkit.cli:main"
+graphkit = "graphkit.graph.cli:main"
 graphkit-chat = "graphkit.chat.__main__:main"
 
 [tool.setuptools.packages.find]
 include = ["graphkit*"]
 
 [tool.setuptools.package-data]
-"graphkit.ui" = ["vis-network.min.js"]
+"graphkit.graph.ui" = ["vis-network.min.js"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

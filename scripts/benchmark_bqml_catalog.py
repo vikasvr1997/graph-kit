@@ -14,12 +14,16 @@ from pathlib import Path
 from google.cloud import bigquery
 from google.api_core.exceptions import NotFound
 
-from graphkit.adapters.bigquery import BigQueryAdapter
-from graphkit.agents.dataset_agent import DatasetAgent
-from graphkit.semantic.bqml_retrieval import BigQueryCatalogRetriever
-from graphkit.core.model import GraphSpec
-from graphkit.semantic.catalog import Catalog, embed, propose, retrieve
-from graphkit.core.workflow import Workspace, confirm
+from graphkit.graph.adapters.bigquery import BigQueryAdapter
+from graphkit.graph.agents.dataset_agent import DatasetAgent
+from graphkit.graph.semantic.bqml_retrieval import BigQueryCatalogRetriever
+from graphkit.graph.core.model import GraphSpec
+from graphkit.graph.semantic.catalog import Catalog
+from graphkit.graph.semantic.catalog import embed
+from graphkit.graph.semantic.catalog import propose
+from graphkit.graph.semantic.catalog import retrieve
+from graphkit.graph.core.workflow import Workspace
+from graphkit.graph.core.workflow import confirm
 from benchmark_cloud import compare, stats
 from cloud_questions import CASES
 from validate_cloud import MODEL

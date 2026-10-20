@@ -19,8 +19,9 @@ def main(argv=None):
         import uvicorn
         uvicorn.run("graphkit.api.application:app", host=args.host, port=args.port)
         return 0
-    from .agent import get_runner
-    from .eval import run_eval, summary
+    from graphkit.chat.agent import get_runner
+    from graphkit.chat.eval import run_eval
+    from graphkit.chat.eval import summary
     runner = get_runner(generation_model=args.model, graph_enabled=False)
     runs = asyncio.run(run_eval(runner))
     result = summary(runs)

@@ -6,14 +6,14 @@ it is not required for chat. React supports both modes, selected by the backend.
 
 | Concern | Standalone chat | Optional GraphKit integration |
 | --- | --- | --- |
-| Agent | `graphkit/chat/agent.py` | `graphkit/agents/dataset_agent.py`, `chat_tools.py` |
-| Guardrails | `graphkit/chat/guardrails.py`: Model Armor input/output screening | `graphkit/agents/dataset_guardrails.py`: read-only queries and approved-source scope |
-| Evaluations | `graphkit/chat/eval.py` | `graphkit/benchmarking/chat_integration.py`, existing graph/dataset benchmarks |
+| Agent | `graphkit/chat/agent.py` | `graphkit/graph/agents/dataset_agent.py`, `chat_tools.py` |
+| Guardrails | `graphkit/chat/guardrails.py`: Model Armor input/output screening | `graphkit/graph/agents/dataset_guardrails.py`: read-only queries and approved-source scope |
+| Evaluations | `graphkit/chat/eval.py` | `graphkit/graph/benchmarking/chat_integration.py`, existing graph/dataset benchmarks |
 | UI | React assistant, model selection, history, attachments | React graph editor or separately launched Streamlit editor |
 
 Disabling GraphKit does not disable chat content guardrails. Graph query checks
-remain mandatory whenever dataset tools are enabled. Existing imports from
-`graphkit.agents.chat_agent` and `graphkit.agents.guardrails` remain compatible.
+remain mandatory whenever dataset tools are enabled. Chat imports now use `graphkit.chat.agent` and `graphkit.chat.guardrails`.
+Graph imports use the `graphkit.graph` namespace.
 
 ## Run only chat
 
@@ -36,8 +36,8 @@ GRAPHKIT_ENABLED=false CHAT_ENABLED=true uvicorn graphkit.api.application:app --
 download its graph workflow bundle. Graph APIs are absent and return 404.
 `GRAPHKIT_ENABLED=true` (the default) enables graph creation. Set `CHAT_ENABLED=true` as well to enable the
 assistant and GraphKit chat tools. Both flags false is an invalid configuration. Restart the process after changing the mode. Use
-`graphkit.api.application:app` for configurable startup; the legacy
-`graphkit.api.server:app` entrypoint remains the graph-enabled application.
+`graphkit.api.application:app` for configurable startup; the graph-specific
+`graphkit.graph.api:app` entrypoint remains the graph-enabled application.
 
 ## Chat-only container
 
@@ -91,13 +91,13 @@ graphkit chat-eval --name SupplyChain --embedding-model gemini-embedding-001
 ```
 
 Graph query correctness/performance benchmarks remain under
-`graphkit/benchmarking`, including the existing `graphkit agent-bench` command.
+`graphkit/graph/benchmarking`, including the existing `graphkit agent-bench` command.
 Live content-guardrail evaluations use the configured Model Armor policy; they
 are distinct from offline regression tests.
 
 ```sh
-python -m pytest tests/test_chat_standalone.py tests/test_chat_api.py tests/test_model_armor.py -q
-python -m pytest tests/test_semantic_agent.py tests/test_queries_bench.py -q
+python -m pytest tests/chat/test_chat_standalone.py tests/chat/test_chat_api.py tests/chat/test_model_armor.py -q
+python -m pytest tests/graph/test_semantic_agent.py tests/graph/test_queries_bench.py -q
 ```
 
 The standalone regression tests also recreate the chat-only container's Python

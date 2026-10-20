@@ -1,8 +1,8 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
-import { api } from './api'
+import { api } from './shared/api'
 
-const ChatApp = lazy(() => import('./ChatApp'))
-const WorkflowApp = lazy(() => import('./WorkflowApp'))
+const ChatApp = lazy(() => import('./chat/App'))
+const WorkflowApp = lazy(() => import('./graph/App'))
 
 export default function App() {
   const [graphkit, setGraphkit] = useState<boolean | null>(null)

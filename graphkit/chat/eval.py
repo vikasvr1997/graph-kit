@@ -4,7 +4,7 @@ Model Armor block what it should), and latency - the same spirit as
 `bench.benchmark_agent` for `DatasetAgent`, extended to ADK's tool-calling.
 
 Default cases do not require a graph, catalog, embeddings or database.
-Graph integration cases live in graphkit.benchmarking.chat_integration.
+Graph integration cases live in graphkit.graph.benchmarking.chat_integration.
 """
 from __future__ import annotations
 
@@ -39,7 +39,7 @@ class EvalRun:
 
 
 async def run_eval(runner, cases: list[dict] = DEFAULT_CASES, session_prefix: str = "eval") -> list[EvalRun]:
-    from .agent import run_turn
+    from graphkit.chat.agent import run_turn
     runs = []
     for i, case in enumerate(cases):
         session_id = f"{session_prefix}-{i}"
