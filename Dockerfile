@@ -1,9 +1,9 @@
 FROM python:3.12-slim
 WORKDIR /app
-ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
+ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 GRAPHKIT_DATASET_ENGINE=adk CHAT_ENABLED=false
 COPY pyproject.toml README.md LICENSE ./
 COPY graphkit ./graphkit
-RUN pip install '.[api,bigquery,spanner,llm,chat]'
+RUN pip install '.[api,bigquery,spanner,llm,adk]'
 # Build with `cd graphkit-web && npm ci && npm run build` first.
 # Firebase's public browser configuration is compiled locally; env files are excluded.
 COPY graphkit-web/dist ./graphkit-web/dist

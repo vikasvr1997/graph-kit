@@ -63,7 +63,7 @@ export const api = {
     }),
   semanticPublish: (name: string) =>
     req<{ rows: number }>('/api/semantic/publish', { method: 'POST', body: JSON.stringify({ name }) }),
-  semanticAsk: (body: { name: string; question: string; embedding_model: string; generation_model: string; mode: string }) =>
+  semanticAsk: (body: { name: string; question: string; embedding_model: string; generation_model: string; mode: string; use_embeddings?: boolean }) =>
     req<AskResult>('/api/semantic/ask', { method: 'POST', body: JSON.stringify(body) }),
 }
 

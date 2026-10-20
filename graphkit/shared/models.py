@@ -9,6 +9,8 @@ check Vertex AI Model Garden for what's enabled in your project before relying o
 """
 from __future__ import annotations
 
+import os
+
 EMBEDDING_MODELS = [
     {
         "id": "gemini-embedding-001",
@@ -81,7 +83,7 @@ GENERATION_MODELS = [
     },
 ]
 
-DEFAULTS = {"embedding_model": "gemini-embedding-001", "generation_model": "gemini-3.5-flash"}
+DEFAULTS = {"embedding_model": "gemini-embedding-001", "generation_model": os.getenv("GRAPHKIT_MODEL", "gemini-3.5-flash")}
 
 NOTE = (
     "There is no required pairing between the embedding model and the generation model - "

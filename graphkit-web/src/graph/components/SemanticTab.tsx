@@ -89,7 +89,7 @@ export function SemanticTab({ name }: Props) {
   })
 
   const ask = () => act('ask', async () => {
-    const r = await api.semanticAsk({ name, question, embedding_model: embModel, generation_model: genModel, mode: askMode })
+    const r = await api.semanticAsk({ name, question, embedding_model: embModel, generation_model: genModel, mode: askMode, use_embeddings: !!state?.embeddings })
     setAskResult(r)
   })
 
@@ -204,7 +204,7 @@ export function SemanticTab({ name }: Props) {
         </div>
       )}
 
-      {state?.has_approved && state.embeddings && (
+      {state?.has_approved && (
         <div className="card flex flex-col gap-3 p-4">
           <h3 className="text-sm font-medium text-text">Try a question</h3>
           <div className="flex gap-3">

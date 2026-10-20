@@ -396,22 +396,39 @@ def semantic_publish(body: ConfirmBody) -> dict:
 class SemanticAskBody(BaseModel):
     name: str
     question: str
-    embedding_model: str
-    generation_model: str
+    embedding_model: str = ""
+    generation_model: str = DEFAULTS["generation_model"]
     mode: str = "auto"
+    use_embeddings: bool = True
 
 
 @app.post("/api/semantic/ask")
-def semantic_ask(body: SemanticAskBody) -> dict:
+async def semantic_ask(body: SemanticAskBody) -> dict:
     def _run():
-        import functools
-        from graphkit.graph.agents.dataset_agent import DatasetAgent
-        from graphkit.graph.agents.llm import _ask
-        embedder = semantic_workflow.GeminiEmbeddings(body.embedding_model)
-        ask_fn = functools.partial(_ask, model=body.generation_model)
-        agent = DatasetAgent(ws(body.name), ask_fn, embedder.question, body.embedding_model)
-        return agent.answer(body.question, mode=body.mode)
-    return run(_run)
+        from graphkit.graph.agents.runtime import create_dataset_agent
+        embed_question = (semantic_workflow.GeminiEmbeddings(body.embedding_model).question
+                          if body.use_embeddings else None)
+        agent = create_dataset_agent(ws(body.name), embed_question=embed_question,
+            embedding_model=body.embedding_model if body.use_embeddings else None,
+            generation_model=body.generation_model, use_embeddings=body.use_embeddings)
+        return agent
+    import asyncio
+    try:
+        agent = await asyncio.to_thread(_run)
+        if hasattr(agent, 'answer_async'):
+            return await agent.answer_async(body.question, mode=body.mode)
+        return await asyncio.to_thread(agent.answer, body.question, mode=body.mode)
+    except Exception as error:
+        raise HTTPException(400, str(error)) from error
+
+
+
+@app.get("/api/dataset/runtime")
+def dataset_runtime() -> dict:
+    from graphkit.graph.agents.runtime import dataset_engine
+    import importlib.metadata
+    return {"engine": dataset_engine(), "adk_version": importlib.metadata.version("google-adk"),
+            "chat_enabled": CHAT_ENABLED}
 
 
 @app.get("/healthz")

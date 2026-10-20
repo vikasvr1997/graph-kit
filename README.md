@@ -306,6 +306,12 @@ before creating its approved semantic revision. Serving otherwise defaults to
 query caching. Metadata publishing batches up to 25 catalog objects per BigQuery
 MERGE job.
 
+## ADK dataset runtime
+
+This feature branch runs dataset questions through Google ADK, with native
+BigQuery/Spanner execution tools and the existing approval/query checks.
+See [ADK_DATASET.md](ADK_DATASET.md) for runtime selection and cloud preview details.
+
 ## Code organization
 
 Graph code lives in `graphkit/graph/`; chat code lives in `graphkit/chat/`.
