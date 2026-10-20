@@ -7,9 +7,9 @@ import subprocess
 import sys
 from pathlib import Path
 
-from . import workflow
-from .bench import summary
-from .ddl import create_graph_ddl
+from .core import workflow
+from .benchmarking.runner import summary
+from .core.ddl import create_graph_ddl
 
 
 def _location(a) -> dict:
@@ -76,7 +76,15 @@ def main(argv=None) -> int:
     s.add_argument("--name", required=True)
     s.add_argument("--sample", type=int, default=100)
 
-    sub.add_parser("ui", help="Open the graph editor in the browser")
+    sub.add_parser("ui", help="Open the graph editor in the browser (Streamlit)")
+
+    s = sub.add_parser("web", help="Run the API backend for the React graph editor")
+    s.add_argument("--port", type=int, default=8765)
+
+    s = sub.add_parser("chat-eval", help="Evaluate the chat agent: tool routing, guardrails, latency")
+    s.add_argument("--name", required=True)
+    s.add_argument("--embedding-model", required=True)
+    s.add_argument("--generation-model", default=None, help="Defaults to GRAPHKIT_MODEL")
 
     s = sub.add_parser("semantic", help="Propose, approve, embed or publish reviewed schema metadata")
     s.add_argument("action", choices=["propose", "approve", "embed", "publish"])
@@ -100,12 +108,37 @@ def main(argv=None) -> int:
     a = p.parse_args(argv)
 
     if a.cmd == "demo":
-        from .demo import make
+        from .core.demo import make
         print(f"Demo data written: {make(a.out)}")
         return 0
     if a.cmd == "ui":
         app = Path(__file__).parent / "ui" / "app.py"
         return subprocess.call([sys.executable, "-m", "streamlit", "run", str(app)])
+    if a.cmd == "web":
+        import os
+        import uvicorn
+        os.environ["GRAPHKIT_HOME"] = a.root
+        uvicorn.run("graphkit.api.server:app", host="127.0.0.1", port=a.port)
+        return 0
+
+    if a.cmd == "chat-eval":
+        import asyncio
+        import functools
+        from .chat.eval import run_eval, summary as eval_summary
+        from .agents.chat_agent import get_runner
+        from .agents.llm import MODEL, _ask
+        from .semantic.workflow import GeminiEmbeddings
+        ws = workflow.Workspace(a.root, a.name)
+        ask = functools.partial(_ask, model=a.generation_model or MODEL)
+        embed_question = GeminiEmbeddings(a.embedding_model).question
+        runner = get_runner(ws, ask, embed_question, a.embedding_model, a.generation_model or MODEL)
+        runs = asyncio.run(run_eval(runner))
+        for r in runs:
+            mark = "OK  " if r.tool_ok and r.guardrail_ok and r.status != "error" else "FAIL"
+            print(f"{mark} tool={r.tool_called!s:<14} blocked={r.blocked!s:<5} {r.elapsed_ms:>8.1f} ms  {r.question}")
+        s = eval_summary(runs)
+        print(json.dumps(s, indent=2))
+        return 0 if s["all_passed"] else 1
 
     ws = workflow.Workspace(a.root, a.name)
     if a.cmd == "scan":
@@ -119,9 +152,9 @@ def main(argv=None) -> int:
         return 0
 
     if a.cmd == "semantic":
-        from . import semantic_workflow as semantic
+        from .semantic import workflow as semantic
         if a.action == "propose":
-            from .llm import _ask
+            from .agents.llm import _ask
             semantic.propose_catalog(ws, _ask if a.llm else None)
             print(f"Review descriptions and aliases in {ws.dir / 'semantic.draft.json'}")
         elif a.action == "approve":
@@ -141,15 +174,15 @@ def main(argv=None) -> int:
             print(f"Published {semantic.publish(ws)} catalog rows.")
         return 0
     if a.cmd in ("ask", "agent-bench"):
-        from .agent import DatasetAgent
-        from .semantic_workflow import GeminiEmbeddings
-        from .llm import _ask
+        from .agents.dataset_agent import DatasetAgent
+        from .semantic.workflow import GeminiEmbeddings
+        from .agents.llm import _ask
         provider = GeminiEmbeddings(a.embedding_model)
         agent = DatasetAgent(ws, _ask, provider.question, a.embedding_model)
         if a.cmd == "ask":
             print(json.dumps(agent.answer(a.question, mode=a.mode), indent=2, default=str))
         else:
-            from .bench import benchmark_agent
+            from .benchmarking.runner import benchmark_agent
             questions = json.loads(Path(a.questions).read_text())
             if not isinstance(questions, list):
                 p.error("--questions must contain a JSON array")
