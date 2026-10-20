@@ -305,3 +305,6 @@ For fair measurements, set `use_query_cache: false` in a BigQuery graph's locati
 before creating its approved semantic revision. Serving otherwise defaults to
 query caching. Metadata publishing batches up to 25 catalog objects per BigQuery
 MERGE job.
+# License
+
+This project is licensed under the [MIT License](LICENSE).

@@ -7,6 +7,7 @@ name = "graphkit"
 version = "0.1.0"
 description = "Find relationships between tables and build BigQuery or Spanner property graphs, with a review UI, Terraform and benchmarks."
 readme = "README.md"
+license = {file = "LICENSE"}
 requires-python = ">=3.10"
 dependencies = ["sqlglot>=26"]
 

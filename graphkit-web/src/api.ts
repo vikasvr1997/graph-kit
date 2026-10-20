@@ -3,7 +3,7 @@ import type {
   GraphResponse, ModelsResponse, SemanticItem, SemanticState, State, TerraformFiles,
 } from './types'
 
-const BASE = 'http://127.0.0.1:8765'
+const BASE = import.meta.env.VITE_API_BASE_URL ?? ''
 
 class ApiError extends Error {}
 
