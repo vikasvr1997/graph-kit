@@ -3,12 +3,12 @@ from __future__ import annotations
 
 import json
 
-from .semantic import Catalog, embed, load_index, propose, validate
-from .adapters import open_adapter
+from .catalog import Catalog, embed, load_index, propose, validate
+from ..adapters import open_adapter
 
 
 def table_name(spec):
-    from .semantic import digest
+    from .catalog import digest
     return 'GraphkitSemantic_' + digest(spec.name)[:16]
 
 
@@ -32,7 +32,7 @@ def semantic_ddl(spec):
 
 
 def write_deployment(ws, spec):
-    from .terraform import BIGQUERY_TF, SPANNER_TF
+    from ..core.terraform import BIGQUERY_TF, SPANNER_TF
     ws.tf_dir.mkdir(parents=True, exist_ok=True)
     (ws.tf_dir / 'semantic.sql').write_text(semantic_ddl(spec) + '\n')
     if spec.backend == 'sqlite':
@@ -86,7 +86,7 @@ def approve_catalog(ws):
 
 class GeminiEmbeddings:
     def __init__(self, model, client=None):
-        from .llm import _client
+        from ..agents.llm import _client
         self.model, self.client = model, client or _client()
 
     def _embed(self, texts, task):

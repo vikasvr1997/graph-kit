@@ -14,9 +14,9 @@ import json
 import os
 import re
 
-from .adapters.base import Adapter, TableInfo
-from .model import GraphSpec
-from .queries import EvalQuery
+from ..adapters.base import Adapter, TableInfo
+from ..core.model import GraphSpec
+from ..benchmarking.generator import EvalQuery
 
 MODEL = os.getenv("GRAPHKIT_MODEL", "gemini-3.5-flash")
 _LABEL = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
@@ -37,6 +37,14 @@ def _ask(prompt: str, client=None, model: str = MODEL) -> dict:
         config=types.GenerateContentConfig(response_mime_type="application/json", temperature=0),
     )
     return json.loads(resp.text)
+
+
+def stream_chat(parts: list, client=None, model: str = MODEL):
+    """Yield text chunks for a plain multimodal chat turn (no JSON mode, no dataset access)."""
+    client = client or _client()
+    for chunk in client.models.generate_content_stream(model=model, contents=parts):
+        if chunk.text:
+            yield chunk.text
 
 
 def _schema(spec: GraphSpec, tables: list[TableInfo]) -> str:

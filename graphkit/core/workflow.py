@@ -18,9 +18,9 @@ import json
 from dataclasses import asdict
 from pathlib import Path
 
-from . import bench as bench_mod
-from . import queries as queries_mod
-from .adapters import Adapter, Column, ForeignKey, TableInfo, apply_descriptions, open_adapter, scan
+from ..benchmarking import runner as bench_mod
+from ..benchmarking import generator as queries_mod
+from ..adapters import Adapter, Column, ForeignKey, TableInfo, apply_descriptions, open_adapter, scan
 from .infer import infer, merge
 from .model import APPROVED, NEW, GraphSpec, diff
 from .terraform import run_terraform, write_terraform
@@ -73,7 +73,7 @@ def do_scan(ws: Workspace, backend: str, location: dict, *, sample_rows: int = 1
     result = infer(tables, adapter, name=ws.name, backend=backend, location=location, check_values=check_values)
     spec, notes = result.spec, result.notes
     if use_llm:
-        from .llm import refine
+        from ..agents.llm import refine
         spec, changes = refine(spec, tables)
         notes += [f"Gemini: {c}" for c in changes]
     approved = ws.approved()
@@ -117,7 +117,7 @@ def do_bench(ws: Workspace, adapter: Adapter | None = None, *, max_hops: int = 3
     adapter = adapter or open_adapter(spec.backend, spec.location)
     qs = queries_mod.generate(spec, adapter, max_hops=max_hops, limit=limit)
     if llm_questions:
-        from .llm import eval_queries
+        from ..agents.llm import eval_queries
         qs += eval_queries(spec, ws.load_scan(), adapter, n=llm_questions)
     results = bench_mod.run_bench(adapter, qs, repeat=repeat)
     bench_mod.save(results, qs, ws.dir)

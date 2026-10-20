@@ -4,7 +4,8 @@ from types import SimpleNamespace as NS
 
 from streamlit.testing.v1 import AppTest
 
-from graphkit import llm, workflow
+from graphkit.agents import llm
+from graphkit.core import workflow
 from graphkit.adk import graph_tools, is_read_only_graph_query, prompt_snippet
 
 

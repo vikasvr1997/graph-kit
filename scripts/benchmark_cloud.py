@@ -15,8 +15,8 @@ from numbers import Number
 from pathlib import Path
 from google import genai
 from google.genai import types
-from graphkit.agent import DatasetAgent
-from graphkit.queries import generate, normalize
+from graphkit.agents.dataset_agent import DatasetAgent
+from graphkit.benchmarking.generator import generate, normalize
 from cloud_questions import CASES
 from validate_cloud import PROJECT, ROOT, MODEL, EMBEDDING, adapter, workspace
 

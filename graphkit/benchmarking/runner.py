@@ -11,8 +11,8 @@ import statistics
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-from .adapters.base import Adapter, GraphNotSupported
-from .queries import EvalQuery, normalize
+from ..adapters.base import Adapter, GraphNotSupported
+from .generator import EvalQuery, normalize
 
 
 @dataclass

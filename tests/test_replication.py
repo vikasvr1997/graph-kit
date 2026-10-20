@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from graphkit.replication import check_config, export_sql, preflight_sql, render, workflow
+from graphkit.core.replication import check_config, export_sql, preflight_sql, render, workflow
 
 
 @pytest.fixture

@@ -19,7 +19,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
-from .adapters.base import Adapter, TableInfo
+from ..adapters.base import Adapter, TableInfo
 from .model import NEW, Edge, GraphSpec, Node
 
 NUMERIC = {"INT64", "NUMERIC"}
