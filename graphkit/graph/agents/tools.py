@@ -117,8 +117,8 @@ def dataset_tools(workspace, *, ask, embed_question, embedding_model, adapter=No
     from graphkit.graph.agents.dataset_agent import DatasetAgent
     dataset = DatasetAgent(workspace, ask, embed_question, embedding_model, adapter)
 
-    def answer_dataset_question(question: str) -> dict:
+    async def answer_dataset_question(question: str) -> dict:
         """Answer a question using the approved dataset and return query evidence."""
-        return dataset.answer(question)
+        return await dataset.answer_async(question)
 
     return [answer_dataset_question]

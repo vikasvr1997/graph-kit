@@ -3,6 +3,7 @@
 Graph-specific query checks stay in dataset_guardrails; chat content screening
 stays in graphkit.chat.guardrails. Import this integration only when enabled.
 """
+import asyncio
 from dataclasses import asdict
 from graphkit.graph.agents.dataset_agent import DatasetAgent
 from graphkit.graph.agents.chart_agent import plan_chart
@@ -21,7 +22,7 @@ INSTRUCTION = (
 
 
 def build_tools(workspace, ask, embed_question, embedding_model):
-    def query_dataset(question: str) -> dict:
+    async def query_dataset(question: str) -> dict:
         """Answer a question using the approved dataset: its property graph, semantic
         catalog and embeddings. Returns the answer, the generated SQL/GQL query, result
         rows and citation ids, or an abstain/error status if it can't be answered safely.
@@ -30,16 +31,16 @@ def build_tools(workspace, ask, embed_question, embedding_model):
             question: The question to answer, in plain English, standing alone (not
                 relying on earlier chat turns the dataset has no knowledge of).
         """
-        # DatasetAgent.answer() raises (not returns abstain/error) when the model's own
+        # DatasetAgent.answer_async() raises (not returns abstain/error) when the model's own
         # generated query is invalid - e.g. validate_scope rejecting an out-of-scope
         # table. ADK treats an uncaught tool exception as a fatal turn failure, not a
         # retryable function response, so that's caught and reported here instead.
         try:
-            return DatasetAgent(workspace, ask, embed_question, embedding_model).answer(question)
+            return await DatasetAgent(workspace, ask, embed_question, embedding_model).answer_async(question)
         except Exception as e:  # noqa: BLE001 - feed back to the model as a normal tool error
             return {"status": "error", "error": str(e)}
 
-    def make_chart(question: str) -> dict:
+    async def make_chart(question: str) -> dict:
         """Answer a question that explicitly asks for a chart, graph, plot or dashboard.
         Runs the dataset query itself, then picks a chart type and field mapping from
         the real returned rows. Returns the same shape as query_dataset plus a "chart"
@@ -49,11 +50,11 @@ def build_tools(workspace, ask, embed_question, embedding_model):
             question: The question to chart, in plain English, standing alone.
         """
         try:
-            result = DatasetAgent(workspace, ask, embed_question, embedding_model).answer(question)
+            result = await DatasetAgent(workspace, ask, embed_question, embedding_model).answer_async(question)
             if result["status"] != "success":
                 return result
             columns = list(result["rows"][0].keys()) if result["rows"] else []
-            chart = plan_chart(question, columns, result["rows"], ask)
+            chart = await asyncio.to_thread(plan_chart, question, columns, result["rows"], ask)
             return {**result, "chart": asdict(chart)}
         except Exception as e:  # noqa: BLE001 - feed back to the model as a normal tool error
             return {"status": "error", "error": str(e)}
