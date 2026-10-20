@@ -223,7 +223,7 @@ tools = dataset_tools(
 )
 ```
 
-For a direct service endpoint, construct `graphkit.agent.DatasetAgent` with the
+For a direct service endpoint, construct `graphkit.graph.agents.dataset_agent.DatasetAgent` with the
 same arguments and call `answer(question)`. Reuse its instance between requests.
 Provider functions are injectable: `ask(prompt)` returns a JSON-compatible dict;
 `embed_question(text)` returns a vector compatible with the catalog's model.

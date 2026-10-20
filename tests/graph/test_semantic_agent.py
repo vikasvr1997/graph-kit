@@ -5,8 +5,8 @@ from types import SimpleNamespace as NS
 import pytest
 
 from graphkit.graph.agents.dataset_agent import DatasetAgent
-from graphkit.graph.agents.dataset_agent import check_query
-from graphkit.graph.agents.dataset_agent import validate_scope
+from graphkit.graph.agents.dataset_guardrails import check_query
+from graphkit.graph.agents.dataset_guardrails import validate_scope
 from graphkit.graph.core.model import GraphSpec
 from graphkit.graph.semantic.catalog import Catalog
 from graphkit.graph.semantic.catalog import embed
@@ -118,7 +118,7 @@ def test_no_embedding_mode_needs_no_vectors_and_passes_full_catalog(reviewed):
     def ask(prompt):
         if prompt.startswith('Explain'):
             return {'answer': 'Count from executed evidence'}
-        context = json.loads(prompt.split('\n', 1)[1])
+        context = json.JSONDecoder().raw_decode(prompt.split('\n', 1)[1])[0]
         assert {h['item']['id'] for h in context['semantic_context']} == {x.id for x in catalog.items}
         return {'mode': 'sql', 'query': sql, 'references': ['table:suppliers']}
     agent = DatasetAgent(ws, ask, None, None, adapter, use_embeddings=False)
@@ -200,11 +200,11 @@ def test_agent_uses_executed_evidence_and_timings(reviewed):
     def ask(prompt):
         prompts.append(prompt)
         if len(prompts) == 1:
-            context = json.loads(prompt.split('\n', 1)[1])
+            context = json.JSONDecoder().raw_decode(prompt.split('\n', 1)[1])[0]
             assert 'table:suppliers' in context['allowed_reference_ids']
             return {'mode': 'sql', 'query': 'SELECT COUNT(*) AS n FROM "suppliers"',
                     'references': ['table:suppliers'], 'interpretation': 'Number of suppliers'}
-        evidence = json.loads(prompt.split('\n', 1)[1])
+        evidence = json.JSONDecoder().raw_decode(prompt.split('\n', 1)[1])[0]
         return {'answer': f"There are {evidence['rows'][0]['n']} suppliers."}
     agent = DatasetAgent(ws, ask, lambda q: [1., 0.], 'test-model', adapter)
     answer = agent.answer('How many vendors?')

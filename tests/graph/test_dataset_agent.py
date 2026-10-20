@@ -6,7 +6,7 @@ from google.adk.models.llm_response import LlmResponse
 from google.genai import types
 from pydantic import Field
 
-from graphkit.graph.agents.adk_dataset import AdkDatasetAgent, make_cloud_toolset
+from graphkit.graph.agents.dataset_agent import DatasetAgent, make_cloud_toolset
 from graphkit.graph.core.workflow import Workspace, confirm
 from graphkit.graph.semantic.workflow import propose_catalog, approve_catalog
 
@@ -36,7 +36,7 @@ def build(dataset, plan, **kwargs):
     ws, adapter = dataset
     planner = FakeModel(model='fake-planner', response=plan)
     explainer = FakeModel(model='fake-explainer', response={'answer': 'There are eight suppliers.'})
-    return AdkDatasetAgent(ws, adapter=adapter, use_embeddings=False,
+    return DatasetAgent(ws, adapter=adapter, use_embeddings=False,
                            planner_model=planner, explanation_model=explainer, **kwargs), planner, explainer
 
 
@@ -89,12 +89,13 @@ def test_native_toolsets_are_readonly_and_limited():
     assert sp._tool_settings.query_result_mode == QueryResultMode.DICT_LIST
 
 
-def test_matches_legacy_evidence_on_same_plan(dataset):
+def test_injected_model_uses_same_adk_workflow(dataset):
     from graphkit.graph.agents.dataset_agent import DatasetAgent
     ws, adapter = dataset
     def ask(prompt):
         return {'answer': 'There are eight suppliers.'} if prompt.startswith('Explain') else PLAN
     baseline = DatasetAgent(ws, ask, None, None, adapter, use_embeddings=False).answer('Count suppliers')
+    assert baseline['engine'] == 'adk'
     agent, _, _ = build(dataset, PLAN)
     actual = agent.answer('Count suppliers')
     for key in ['status', 'query', 'mode', 'rows', 'references', 'truncated', 'catalog_revision', 'answer']:
@@ -140,7 +141,7 @@ def test_api_awaits_adk_workflow(dataset, monkeypatch):
 
 
 def test_model_generation_is_bounded():
-    from graphkit.graph.agents.adk_dataset import generation_config
+    from graphkit.graph.agents.dataset_agent import generation_config
     config = generation_config('gemini-3.5-flash', 2048)
     assert config.max_output_tokens == 2048
     assert config.thinking_config.thinking_level == types.ThinkingLevel.LOW
@@ -159,3 +160,57 @@ assert SemanticAskBody(name='demo', question='Count suppliers').generation_model
         env={**os.environ, 'GRAPHKIT_MODEL': 'gemini-2.5-flash', 'CHAT_ENABLED': 'false'},
         capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
+
+
+def test_runtime_has_one_engine_and_propagates_model(dataset, monkeypatch):
+    from graphkit.graph.agents.runtime import create_dataset_agent, dataset_engine
+    monkeypatch.delenv('GRAPHKIT_DATASET_ENGINE', raising=False)
+    assert dataset_engine() == 'adk'
+    agent = create_dataset_agent(dataset[0], adapter=dataset[1], use_embeddings=False,
+                                 generation_model='gemini-2.5-flash')
+    assert isinstance(agent, DatasetAgent)
+    assert agent.planner_model == agent.explanation_model == 'gemini-2.5-flash'
+    monkeypatch.setenv('GRAPHKIT_DATASET_ENGINE', 'legacy')
+    with pytest.raises(ValueError, match='Only the adk'):
+        create_dataset_agent(dataset[0])
+
+
+@pytest.mark.parametrize('response,match', [
+    ({'status': 'ERROR', 'error_details': 'permission denied'}, 'permission denied'),
+    ({'status': 'SUCCESS', 'rows': [[8]]}, 'dictionary rows'),
+])
+def test_native_failures_close_toolset_and_skip_explanation(dataset, response, match):
+    closed = []
+    class Tool:
+        name = 'execute_sql'
+        async def run_async(self, **kwargs):
+            return response
+    class Toolset:
+        async def get_tools(self):
+            return [Tool()]
+        async def close(self):
+            closed.append(True)
+    agent, _, explainer = build(dataset, PLAN, toolset_factory=lambda *a: Toolset())
+    agent.dataset.spec.backend = 'bigquery'
+    agent.dataset.spec.location = {'project': 'approved-project'}
+    with pytest.raises(ValueError, match=match):
+        agent.answer('Count suppliers')
+    assert closed == [True]
+    assert not explainer.prompts
+
+
+def test_chat_dataset_tool_awaits_shared_agent(monkeypatch):
+    import asyncio
+    from graphkit.graph.agents import chat_tools
+    calls = []
+    class Agent:
+        def __init__(self, *args):
+            pass
+        async def answer_async(self, question):
+            calls.append(question)
+            return {'status': 'success', 'rows': [{'n': 8}], 'engine': 'adk'}
+    monkeypatch.setattr(chat_tools, 'DatasetAgent', Agent)
+    query, _ = chat_tools.build_tools(None, None, None, None)
+    result = asyncio.run(query('Count suppliers'))
+    assert result['engine'] == 'adk'
+    assert calls == ['Count suppliers']

@@ -179,9 +179,9 @@ def main(argv=None) -> int:
     if a.cmd in ("ask", "agent-bench"):
         from graphkit.graph.agents.runtime import create_dataset_agent
         from graphkit.graph.semantic.workflow import GeminiEmbeddings
-        from graphkit.graph.agents.llm import _ask, MODEL
+        from graphkit.graph.agents.llm import MODEL
         provider = GeminiEmbeddings(a.embedding_model)
-        agent = create_dataset_agent(ws, _ask, provider.question, a.embedding_model, generation_model=MODEL)
+        agent = create_dataset_agent(ws, provider.question, a.embedding_model, generation_model=MODEL)
         if a.cmd == "ask":
             print(json.dumps(agent.answer(a.question, mode=a.mode), indent=2, default=str))
         else:

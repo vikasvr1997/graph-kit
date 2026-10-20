@@ -8,7 +8,7 @@ feature remains disabled by default.
 
 ## Execution
 
-`graphkit/graph/agents/adk_dataset.py` builds an ADK `SequentialAgent` with:
+`graphkit/graph/agents/dataset_agent.py` builds an ADK `SequentialAgent` with:
 
 1. Approved-context retrieval: load the reviewed schema, graph and semantic catalog.
 2. ADK `LlmAgent` planner: produce a structured query plan, or abstain.
@@ -32,11 +32,11 @@ SQLite uses the existing database-enforced read-only adapter.
 Native tools are used here; an external MCP server is not required or configured.
 Project-specific approval, schema and query validation remain GraphKit code.
 
-## Installation and engine selection
+## Installation
 
 ```sh
-pip install -e '.[api,adk,bigquery,spanner,llm]'
-GRAPHKIT_DATASET_ENGINE=adk graphkit web
+pip install -e '.[api,adk,bigquery,spanner]'
+graphkit web
 ```
 
 ADK is pinned to `2.12.0` for the APIs validated by this feature. This release
@@ -45,15 +45,12 @@ Spanner toolsets experimental; those upstream transitions are not part of this
 migration. Set `GRAPHKIT_MODEL` to configure the default generation model at server startup.
 The preview uses `gemini-2.5-flash`, which passed the live checks; Gemini 3.5
 produced correct early results but later hit the model request timeout.
-The original implementation remains available for comparisons:
-
-```sh
-GRAPHKIT_DATASET_ENGINE=legacy graphkit web
-```
-
-The API's `/api/semantic/ask` and CLI `ask`/`agent-bench` use the selected engine.
-Existing direct imports of the original `DatasetAgent` remain the baseline.
-The optional conversational chat tools retain their existing behavior.
+`DatasetAgent` is the single ADK implementation used by the API, CLI, chat tools
+and benchmark integrations. Approval, retrieval and query validation live in
+`dataset_context.py`; they do not implement another agent. Injected `ask` callables
+are adapted to ADK model requests for provider-independent tests and benchmarks.
+The legacy engine has been removed. Unset `GRAPHKIT_DATASET_ENGINE` if previously
+configured to `legacy`.
 
 Approved datasets can be queried without embeddings by setting
 `use_embeddings: false` in the API body. The Semantic UI uses the full approved
@@ -96,7 +93,7 @@ BigQuery dataset only, and object access to its own workspace bucket.
 ## Verification
 
 Offline tests exercise actual ADK runners with fake model responses, compare
-legacy and ADK evidence for a fixed plan, verify abstention, and assert that
+injected and ADK model evidence for a fixed plan, verify abstention, and assert that
 writes, out-of-scope tables and invalid citations fail before execution.
 Native toolset configuration and fixed workspace targeting are also tested.
 
