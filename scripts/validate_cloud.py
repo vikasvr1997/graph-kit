@@ -6,11 +6,17 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from google import genai
 from google.genai import types
-from graphkit.adapters import open_adapter
-from graphkit.core.workflow import Workspace, do_scan, confirm, apply
-from graphkit.semantic.catalog import Catalog
-from graphkit.semantic.workflow import propose_catalog, approve_catalog, embed_catalog, publish
-from graphkit.agents.llm import _ask
+from graphkit.graph.adapters import open_adapter
+from graphkit.graph.core.workflow import Workspace
+from graphkit.graph.core.workflow import do_scan
+from graphkit.graph.core.workflow import confirm
+from graphkit.graph.core.workflow import apply
+from graphkit.graph.semantic.catalog import Catalog
+from graphkit.graph.semantic.workflow import propose_catalog
+from graphkit.graph.semantic.workflow import approve_catalog
+from graphkit.graph.semantic.workflow import embed_catalog
+from graphkit.graph.semantic.workflow import publish
+from graphkit.graph.agents.llm import _ask
 
 PROJECT='premium-odyssey-508202-k9'
 ROOT=Path('graphkit_out/cloud_validation')
@@ -27,7 +33,7 @@ def adapter(backend):
               {'project':PROJECT,'instance':'graphkit-benchmark','database':'graphkit_validation'})
     if backend=='spanner':
         from google.cloud import spanner
-        from graphkit.adapters.spanner import SpannerAdapter
+        from graphkit.graph.adapters.spanner import SpannerAdapter
         db=spanner.Client(project=PROJECT,disable_builtin_metrics=True).instance('graphkit-benchmark').database('graphkit_validation')
         return SpannerAdapter(location,database=db)
     return open_adapter(backend,location)
@@ -89,8 +95,9 @@ def main():
     elif a.phase=='publish':
         print('Published',publish(ws,source),'semantic records',flush=True)
     else:
-        from graphkit.semantic.catalog import load_index
-        from graphkit.semantic.workflow import current, table_name
+        from graphkit.graph.semantic.catalog import load_index
+        from graphkit.graph.semantic.workflow import current
+        from graphkit.graph.semantic.workflow import table_name
         spec,catalog=current(ws)
         index=load_index(catalog,ws.dir/'embeddings.json')
         query=(f'SELECT COUNT(*) AS n, COUNT(DISTINCT item_id) AS unique_ids, '

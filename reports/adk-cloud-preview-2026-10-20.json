@@ -1,0 +1,77 @@
+{
+  "service": "https://graphkit-adk-100634033534.us-central1.run.app",
+  "runtime": {
+    "engine": "adk",
+    "adk_version": "2.12.0",
+    "chat_enabled": false
+  },
+  "model": "gemini-2.5-flash",
+  "synthetic_data_only": true,
+  "runs": [
+    {
+      "workspace": "SupplyChain",
+      "expected_count": 8,
+      "passed": true,
+      "http_elapsed_ms": 6808.69,
+      "result": {
+        "status": "success",
+        "query": "SELECT count(supplier_id) FROM \"suppliers\" LIMIT 50",
+        "mode": "sql",
+        "rows": [
+          {
+            "count(supplier_id)": 8
+          }
+        ],
+        "truncated": false,
+        "references": [
+          "column:suppliers.supplier_id",
+          "table:suppliers"
+        ],
+        "catalog_revision": "345d58d534bc62ec2dd6c1bd473b3c7b270cf51898e62582785f5a2cfbad87e9",
+        "answer": "There are 8 suppliers. The query counted the total number of supplier IDs from the 'suppliers' table, and the results were not truncated.",
+        "timings_ms": {
+          "retrieval": 1.96,
+          "generation": 1572.49,
+          "execution": 223.57,
+          "explanation": 1257.3,
+          "total": 3055.33
+        },
+        "engine": "adk"
+      }
+    },
+    {
+      "workspace": "BigQueryDemo",
+      "expected_count": 8,
+      "passed": true,
+      "http_elapsed_ms": 5145.26,
+      "result": {
+        "status": "success",
+        "query": "SELECT count(DISTINCT supplier_id) FROM `premium-odyssey-508202-k9.graphkit_adk_demo.suppliers` LIMIT 50",
+        "mode": "sql",
+        "rows": [
+          {
+            "f0_": 8
+          }
+        ],
+        "truncated": false,
+        "references": [
+          "column:suppliers.supplier_id",
+          "table:suppliers"
+        ],
+        "catalog_revision": "2d8f486d2d12405b84df8689c27c52b6e926219a5407f3b421bb701f64716914",
+        "answer": "There are 8 unique suppliers.",
+        "timings_ms": {
+          "retrieval": 2.09,
+          "generation": 1515.75,
+          "execution": 1105.79,
+          "explanation": 1220.87,
+          "total": 3844.51
+        },
+        "engine": "adk"
+      }
+    }
+  ],
+  "revision": "graphkit-adk-00005-vpj",
+  "image_digest": "sha256:9e86f65a82fe6e0200d518b786f5471d84110febb54f8fd1a40b56fd356eaa34",
+  "all_passed": true
+}

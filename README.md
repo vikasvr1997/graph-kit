@@ -208,7 +208,7 @@ use injected providers and do not require cloud access.
 ```python
 from graphkit.adk import dataset_tools
 from graphkit.llm import _ask
-from graphkit.semantic_workflow import GeminiEmbeddings
+from graphkit.graph.semantic_workflow import GeminiEmbeddings
 from graphkit.workflow import Workspace
 
 ws = Workspace("graphkit_out", "Operations")
@@ -305,6 +305,25 @@ For fair measurements, set `use_query_cache: false` in a BigQuery graph's locati
 before creating its approved semantic revision. Serving otherwise defaults to
 query caching. Metadata publishing batches up to 25 catalog objects per BigQuery
 MERGE job.
-# License
+
+## ADK dataset runtime
+
+This feature branch runs dataset questions through Google ADK, with native
+BigQuery/Spanner execution tools and the existing approval/query checks.
+See [ADK_DATASET.md](ADK_DATASET.md) for runtime selection and cloud preview details.
+
+## Code organization
+
+Graph code lives in `graphkit/graph/`; chat code lives in `graphkit/chat/`.
+React and tests use matching `graph/` and `chat/` folders.
+See [ARCHITECTURE.md](ARCHITECTURE.md) for the layout and updated import paths.
+
+## Independent chat mode
+
+Graph creation is the default; chat is disabled unless `CHAT_ENABLED=true`.
+The conversational assistant can run without GraphKit workflows, graph tools,
+semantic embeddings or Streamlit. See [chat-only setup and evaluations](CHAT.md).
+
+## License
 
 This project is licensed under the [MIT License](LICENSE).

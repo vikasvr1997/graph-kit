@@ -28,7 +28,7 @@ def main():
     bq=bigquery.Client(project=config['project_id'],location=config['region'])
     PRIVATE.mkdir(parents=True,exist_ok=True)
     if args.action=='render':
-        from graphkit.core.replication import render
+        from graphkit.graph.core.replication import render
         def describe(table):
             actual=bq.get_table(f"{config['project_id']}.{config['source_dataset']}.{table['source']}")
             if actual.table_type!='TABLE':raise ValueError('Only base tables support this snapshot pipeline.')
@@ -72,7 +72,7 @@ def main():
     from google.cloud import spanner
     db=spanner.Client(project=config['project_id'],disable_builtin_metrics=True).instance(config['spanner_instance']).database(config['spanner_database'])
     schema=json.loads((ROOT/'generated/source_schema.json').read_text())
-    from graphkit.core.replication import source_ref
+    from graphkit.graph.core.replication import source_ref
     def source_query(sql):
         cfg=bigquery.QueryJobConfig(use_query_cache=False,maximum_bytes_billed=1024**3,
             query_parameters=[bigquery.ScalarQueryParameter('snapshot','TIMESTAMP',snapshot)])

@@ -17,19 +17,21 @@ spanner = ["google-cloud-spanner>=3.40"]
 ui = ["streamlit>=1.40", "pandas"]
 api = ["fastapi>=0.110", "uvicorn[standard]>=0.30"]
 llm = ["google-genai>=1.0"]
-chat = ["firebase-admin>=6.5", "google-adk>=2.0", "google-cloud-modelarmor>=0.2"]
+adk = ["google-adk==2.12.0"]
+chat = ["firebase-admin>=6.5", "google-adk==2.12.0", "google-cloud-modelarmor>=0.2"]
 notebook = ["bigquery-magics[spanner-graph-notebook]>=0.15", "spanner-graph-notebook>=1.1", "jupyter"]
-all = ["graphkit[bigquery,spanner,ui,api,llm,chat]"]
+all = ["graphkit[bigquery,spanner,ui,api,llm,adk,chat]"]
 dev = ["graphkit[all]", "pytest"]
 
 [project.scripts]
-graphkit = "graphkit.cli:main"
+graphkit = "graphkit.graph.cli:main"
+graphkit-chat = "graphkit.chat.__main__:main"
 
 [tool.setuptools.packages.find]
 include = ["graphkit*"]
 
 [tool.setuptools.package-data]
-"graphkit.ui" = ["vis-network.min.js"]
+"graphkit.graph.ui" = ["vis-network.min.js"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
